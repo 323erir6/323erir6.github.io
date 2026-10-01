@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="BarberPoint — barbershop concept website by OneOne.">
+  <meta name="theme-color" content="#0d1012">
+  <title>BarberPoint — Concept by OneOne</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+<header class="nav wrap">
+  <a class="logo" href="#top">BARBER<span>POINT</span></a>
+  <nav>
+    <a href="#services" data-uk="Послуги" data-en="Services">Послуги</a>
+    <a href="#team" data-uk="Майстри" data-en="Barbers">Майстри</a>
+    <a href="#booking" data-uk="Запис" data-en="Booking">Запис</a>
+    <button id="langSwitch" type="button">EN</button>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <img class="hero-img" src="https://images.unsplash.com/photo-1759134248487-e8baaf31e33e?auto=format&fit=crop&w=2200&q=86" alt="Сучасний барбершоп">
+    <div class="overlay"></div>
+    <div class="wrap hero-inner">
+      <p class="label">BARBERSHOP / KYIV</p>
+      <h1>SHARP<br><span>BY DEFAULT.</span></h1>
+      <p class="lead" data-uk="Сучасні чоловічі стрижки, оформлення бороди та персональний підбір форми під ваш стиль. Оберіть майстра і запишіться онлайн у кілька кроків." data-en="Modern men's haircuts, beard grooming and a shape tailored to your style. Choose your barber and book online in just a few steps.">Сучасні чоловічі стрижки, оформлення бороди та персональний підбір форми під ваш стиль. Оберіть майстра і запишіться онлайн у кілька кроків.</p>
+      <div class="actions"><a class="btn accent" href="#booking" data-uk="Записатися" data-en="Book now">Записатися</a><a class="btn ghost" href="#services" data-uk="Послуги та ціни" data-en="Services & prices">Послуги та ціни</a></div>
+      <div class="hero-bottom"><span>MON — SUN / 10:00 — 21:00</span><span>KYIV / CENTER</span></div>
+    </div>
+  </section>
+
+  <section id="services" class="section wrap">
+    <div class="section-title"><p class="label" data-uk="ПОСЛУГИ" data-en="SERVICES">ПОСЛУГИ</p><h2 data-uk="Все, що потрібно. Нічого зайвого." data-en="Everything you need. Nothing extra.">Все, що потрібно. Нічого зайвого.</h2></div>
+    <div class="service-list">
+      <article><span>01</span><h3 data-uk="Чоловіча стрижка" data-en="Haircut">Чоловіча стрижка</h3><p data-uk="Консультація, миття, стрижка та укладка." data-en="Consultation, wash, cut and styling.">Консультація, миття, стрижка та укладка.</p><b>650 ₴</b></article>
+      <article><span>02</span><h3 data-uk="Борода" data-en="Beard trim">Борода</h3><p data-uk="Форма, контур, тример і догляд." data-en="Shape, contour, trim and care.">Форма, контур, тример і догляд.</p><b>400 ₴</b></article>
+      <article><span>03</span><h3 data-uk="Стрижка + борода" data-en="Haircut + Beard">Стрижка + борода</h3><p data-uk="Повний образ за один візит." data-en="A complete look in one visit.">Повний образ за один візит.</p><b>950 ₴</b></article>
+      <article><span>04</span><h3 data-uk="Стрижка машинкою" data-en="Buzz cut">Стрижка машинкою</h3><p data-uk="Чиста форма, фейд і окантовка." data-en="Clean shape, fade and contour.">Чиста форма, фейд і окантовка.</p><b>450 ₴</b></article>
+    </div>
+  </section>
+
+  <section class="photo-band"><div class="wrap photo-grid"><figure class="p1"><img src="https://images.unsplash.com/photo-1771489465791-00ee339a9c92?auto=format&fit=crop&w=1800&q=84" alt="Барбер під час стрижки" loading="lazy"></figure><div class="copy"><p class="label" data-uk="ПІДХІД" data-en="APPROACH">ПІДХІД</p><blockquote data-uk="Починаємо не зі стрижки, а з того, що має добре виглядати саме на тобі." data-en="We start not with the haircut, but with what will actually look right on you.">Починаємо не зі стрижки, а з того, що має добре виглядати саме на тобі.</blockquote><p data-uk="Форма голови, структура волосся, стиль і те, скільки часу ти готовий витрачати на укладку щодня." data-en="Head shape, hair texture, style and how much time you want to spend styling it every day.">Форма голови, структура волосся, стиль і те, скільки часу ти готовий витрачати на укладку щодня.</p></div></div></section>
+
+  <section id="team" class="section wrap">
+    <div class="section-title"><p class="label" data-uk="КОМАНДА" data-en="TEAM">КОМАНДА</p><h2 data-uk="Обери майстра під свій стиль." data-en="Choose a barber for your style.">Обери майстра під свій стиль.</h2></div>
+    <div class="team-grid">
+      <article><div class="portrait portrait-a"></div><h3 data-uk="Андрій" data-en="Andrii">Андрій</h3><p>Fade / Texture / Classic</p></article>
+      <article><div class="portrait portrait-b"></div><h3 data-uk="Максим" data-en="Max">Максим</h3><p>Beard / Crop / Styling</p></article>
+      <article><div class="portrait portrait-c"></div><h3 data-uk="Олексій" data-en="Oleksii">Олексій</h3><p>Classic / Scissor / Long hair</p></article>
+    </div>
+  </section>
+
+  <section id="booking" class="section booking">
+    <div class="wrap">
+      <div class="section-title"><p class="label" data-uk="ОНЛАЙН-ЗАПИС" data-en="ONLINE BOOKING">ОНЛАЙН-ЗАПИС</p><h2 data-uk="Запис за чотири кроки." data-en="Book in four steps.">Запис за чотири кроки.</h2></div>
+      <div class="booking-shell">
+        <div class="steps">
+          <button class="active" data-step="1" type="button">1 <span data-uk="Послуга" data-en="Service">Послуга</span></button>
+          <button data-step="2" type="button">2 <span data-uk="Майстер" data-en="Barber">Майстер</span></button>
+          <button data-step="3" type="button">3 <span data-uk="Час" data-en="Time">Час</span></button>
+          <button data-step="4" type="button">4 <span data-uk="Контакт" data-en="Contact">Контакт</span></button>
+        </div>
+        <form id="bookingForm" novalidate>
+          <div class="panel-wrap">
+            <section class="panel active" data-panel="1">
+              <h3 data-uk="Що робимо?" data-en="What are we doing?">Що робимо?</h3>
+              <div class="choice-grid" id="serviceChoices">
+                <button type="button" data-value="haircut"><span data-uk="Чоловіча стрижка" data-en="Haircut">Чоловіча стрижка</span><b>650 ₴</b></button>
+                <button type="button" data-value="beard"><span data-uk="Борода" data-en="Beard trim">Борода</span><b>400 ₴</b></button>
+                <button type="button" data-value="combo"><span data-uk="Стрижка + борода" data-en="Haircut + Beard">Стрижка + борода</span><b>950 ₴</b></button>
+                <button type="button" data-value="buzz"><span data-uk="Стрижка машинкою" data-en="Buzz cut">Стрижка машинкою</span><b>450 ₴</b></button>
+              </div>
+            </section>
+
+            <section class="panel" data-panel="2">
+              <h3 data-uk="Обери майстра" data-en="Choose a barber">Обери майстра</h3>
+              <div class="choice-grid" id="barberChoices">
+                <button type="button" data-value="andrii"><span data-uk="Андрій" data-en="Andrii">Андрій</span><small>Fade / Texture</small></button>
+                <button type="button" data-value="max"><span data-uk="Максим" data-en="Max">Максим</span><small>Beard / Crop</small></button>
+                <button type="button" data-value="oleksii"><span data-uk="Олексій" data-en="Oleksii">Олексій</span><small>Classic / Scissor</small></button>
+              </div>
+            </section>
+
+            <section class="panel" data-panel="3">
+              <h3 data-uk="Коли зручно?" data-en="When works for you?">Коли зручно?</h3>
+              <div class="date-time">
+                <label><span data-uk="Дата" data-en="Date">Дата</span>
+                  <div class="date-picker" data-date-picker>
+                    <input type="hidden" name="date">
+                    <button class="date-trigger" type="button" aria-haspopup="dialog" aria-expanded="false"><span class="date-value">Оберіть дату</span><span class="date-icon" aria-hidden="true"></span></button>
+                    <div class="calendar-popover" hidden></div>
+                  </div>
+                </label>
+                <div class="times" id="timeChoices"><button type="button" data-value="11:00">11:00</button><button type="button" data-value="13:30">13:30</button><button type="button" data-value="16:00">16:00</button><button type="button" data-value="18:30">18:30</button><button type="button" data-value="20:00">20:00</button></div>
+              </div>
+            </section>
+
+            <section class="panel" data-panel="4">
+              <h3 data-uk="Залиш контакт" data-en="Leave your contact">Залиш контакт</h3>
+              <div class="contact-fields"><label><span data-uk="Ім'я" data-en="Name">Ім'я</span><input id="clientName" name="name" required autocomplete="name"></label><label><span data-uk="Телефон" data-en="Phone">Телефон</span><input id="clientPhone" name="phone" required inputmode="tel" autocomplete="tel"></label></div>
+              <div id="summary" class="summary"></div>
+            </section>
+          </div>
+
+          <div class="controls"><button id="prevBtn" class="btn ghost dark-ghost" type="button" data-uk="Назад" data-en="Back">Назад</button><button id="nextBtn" class="btn accent" type="button" data-uk="Далі" data-en="Next">Далі</button><button id="submitBtn" class="btn accent hidden" type="submit" data-uk="Підтвердити запис" data-en="Confirm booking">Підтвердити запис</button></div>
+          <p id="status" class="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap footer"><div><a class="logo" href="#top">BARBER<span>POINT</span></a><p data-uk="Концепт-сайт для портфоліо OneOne." data-en="Concept website for the OneOne portfolio.">Концепт-сайт для портфоліо OneOne.</p></div><div><span>KYIV / 2026</span><a href="../index.html">← OneOne Portfolio</a></div></footer>
+
+<div class="order-modal" id="orderModal" hidden>
+  <div class="order-modal-backdrop" data-modal-close></div>
+  <section class="order-modal-card" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+    <p class="label" data-uk="ЗАПИС ПІДТВЕРДЖЕНО" data-en="BOOKING CONFIRMED">ЗАПИС ПІДТВЕРДЖЕНО</p>
+    <h3 id="orderModalTitle" data-uk="Чекаємо на вас." data-en="We’ll see you then.">Чекаємо на вас.</h3>
+    <div class="order-summary" id="orderSummary"></div>
+    <button class="btn accent modal-ok" type="button" data-modal-close>OK</button>
+  </section>
+</div>
+</body>
+</html>
