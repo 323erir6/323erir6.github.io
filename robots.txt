@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://323erir6.github.io/sitemap.xml
