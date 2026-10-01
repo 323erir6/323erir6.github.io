@@ -30,6 +30,10 @@ CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
 db = SQLAlchemy(app)
 KYIV_TZ = ZoneInfo("Europe/Kyiv")
+OPENING_TIME = time(10, 0)
+CLOSING_TIME = time(21, 0)
+BOOKING_INTERVAL_MINUTES = 30
+MAX_BOOKING_DAYS = 90
 
 
 def local_now():
@@ -159,6 +163,18 @@ def serialize_barber(barber):
     }
 
 
+def serialize_blocked_slot(slot):
+    return {
+        "id": slot.id,
+        "barber_id": slot.barber_id,
+        "barber": serialize_barber(slot.barber),
+        "date": slot.blocked_date.isoformat(),
+        "time": slot.blocked_time.strftime("%H:%M"),
+        "duration_minutes": slot.duration_minutes,
+        "reason": slot.reason,
+    }
+
+
 def parse_date(value):
     try:
         return datetime.strptime(value, "%Y-%m-%d").date()
@@ -211,8 +227,8 @@ def is_slot_free(barber_id, day, clock, duration):
 
 
 def generate_slots(barber_id, day, duration):
-    opening = datetime.combine(day, time(10, 0))
-    closing = datetime.combine(day, time(21, 0))
+    opening = datetime.combine(day, OPENING_TIME)
+    closing = datetime.combine(day, CLOSING_TIME)
     cursor = opening
     result = []
 
@@ -220,7 +236,7 @@ def generate_slots(barber_id, day, duration):
         if day > local_today() or cursor.time() > local_now().time().replace(tzinfo=None):
             if is_slot_free(barber_id, day, cursor.time(), duration):
                 result.append(cursor.strftime("%H:%M"))
-        cursor += timedelta(minutes=30)
+        cursor += timedelta(minutes=BOOKING_INTERVAL_MINUTES)
 
     return result
 
@@ -286,6 +302,8 @@ def available_slots():
 
     if day < local_today():
         return jsonify({"error": "date is in the past"}), 400
+    if day > local_today() + timedelta(days=MAX_BOOKING_DAYS):
+        return jsonify({"error": "date is too far in the future"}), 400
 
     barber = db.session.get(Barber, barber_id)
     service = db.session.get(Service, service_id)
@@ -313,14 +331,16 @@ def create_booking():
     day = parse_date(payload.get("date"))
     clock = parse_time(payload.get("time"))
 
-    if len(client_name) < 2:
+    if len(client_name) < 2 or len(client_name) > 120:
         return jsonify({"error": "invalid name"}), 400
-    if len(re.sub(r"\D", "", phone)) < 7:
+    if len(phone) > 40 or len(re.sub(r"\D", "", phone)) < 7:
         return jsonify({"error": "invalid phone"}), 400
     if not isinstance(barber_id, int) or not isinstance(service_id, int) or not day or not clock:
         return jsonify({"error": "invalid booking data"}), 400
     if day < local_today():
         return jsonify({"error": "date is in the past"}), 400
+    if day > local_today() + timedelta(days=MAX_BOOKING_DAYS):
+        return jsonify({"error": "date is too far in the future"}), 400
 
     barber = db.session.get(Barber, barber_id)
     service = db.session.get(Service, service_id)
@@ -334,9 +354,10 @@ def create_booking():
             {"lock_key": lock_key},
         )
 
-    if not is_slot_free(barber_id, day, clock, service.duration_minutes):
+    requested_time = clock.strftime("%H:%M")
+    if requested_time not in generate_slots(barber_id, day, service.duration_minutes):
         db.session.rollback()
-        return jsonify({"error": "slot is no longer available"}), 409
+        return jsonify({"error": "slot is not available"}), 409
 
     booking = Booking(
         client_name=client_name,
@@ -424,6 +445,35 @@ def admin_update_booking(booking_id):
     return jsonify({"success": True, "id": booking.id, "status": booking.status})
 
 
+@app.get("/api/admin/blocked-slots")
+def admin_blocked_slots():
+    if not admin_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+
+    query = BlockedSlot.query.order_by(BlockedSlot.blocked_date, BlockedSlot.blocked_time)
+    if request.args.get("date"):
+        day = parse_date(request.args.get("date"))
+        if not day:
+            return jsonify({"error": "invalid date"}), 400
+        query = query.filter(BlockedSlot.blocked_date == day)
+
+    return jsonify([serialize_blocked_slot(slot) for slot in query.all()])
+
+
+@app.delete("/api/admin/blocked-slots/<int:slot_id>")
+def admin_delete_blocked_slot(slot_id):
+    if not admin_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+
+    slot = db.session.get(BlockedSlot, slot_id)
+    if not slot:
+        return jsonify({"error": "blocked slot not found"}), 404
+
+    db.session.delete(slot)
+    db.session.commit()
+    return jsonify({"success": True, "id": slot_id})
+
+
 @app.post("/api/admin/blocked-slots")
 def admin_block_slot():
     if not admin_authorized():
@@ -437,7 +487,11 @@ def admin_block_slot():
 
     if not isinstance(barber_id, int) or not day or not clock:
         return jsonify({"error": "invalid block data"}), 400
-    if not isinstance(duration, int) or duration < 15 or duration > 480:
+    if day < local_today():
+        return jsonify({"error": "date is in the past"}), 400
+    if day == local_today() and clock <= local_now().time().replace(tzinfo=None):
+        return jsonify({"error": "time is in the past"}), 400
+    if not isinstance(duration, int) or duration < 15 or duration > 720:
         return jsonify({"error": "invalid duration"}), 400
 
     barber = db.session.get(Barber, barber_id)
