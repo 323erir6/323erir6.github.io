@@ -247,6 +247,16 @@ def admin_authorized():
     return bool(configured and supplied and supplied == configured)
 
 
+def unique_barber_code(seed):
+    base = re.sub(r"[^a-z0-9]+", "-", (seed or "").lower()).strip("-")[:24] or "barber"
+    code = base
+    suffix = 2
+    while Barber.query.filter_by(code=code).first():
+        code = f"{base[:20]}-{suffix}"
+        suffix += 1
+    return code
+
+
 @app.get("/")
 def root():
     return jsonify(
@@ -289,6 +299,85 @@ def barbers():
     return jsonify(
         [serialize_barber(item) for item in Barber.query.filter_by(active=True).order_by(Barber.id).all()]
     )
+
+
+@app.get("/api/admin/barbers")
+def admin_barbers():
+    if not admin_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+
+    return jsonify([serialize_barber(item) for item in Barber.query.order_by(Barber.id).all()])
+
+
+@app.post("/api/admin/barbers")
+def admin_create_barber():
+    if not admin_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+
+    payload = request.get_json(silent=True) or {}
+    name_uk = str(payload.get("name_uk", "")).strip()
+    name_en = str(payload.get("name_en", "")).strip()
+    specialization = str(payload.get("specialization", "")).strip()
+
+    if not (2 <= len(name_uk) <= 80):
+        return jsonify({"error": "invalid Ukrainian name"}), 400
+    if not (2 <= len(name_en) <= 80):
+        return jsonify({"error": "invalid English name"}), 400
+    if not (2 <= len(specialization) <= 160):
+        return jsonify({"error": "invalid specialization"}), 400
+
+    barber = Barber(
+        code=unique_barber_code(name_en),
+        name_uk=name_uk,
+        name_en=name_en,
+        specialization=specialization,
+        active=True,
+    )
+    db.session.add(barber)
+    db.session.commit()
+
+    return jsonify({"success": True, "barber": serialize_barber(barber)}), 201
+
+
+@app.get("/api/admin/calendar")
+def admin_calendar():
+    if not admin_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+
+    month = str(request.args.get("month", "")).strip()
+    if not re.fullmatch(r"\d{4}-\d{2}", month):
+        return jsonify({"error": "month must be YYYY-MM"}), 400
+
+    try:
+        first = datetime.strptime(month + "-01", "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({"error": "invalid month"}), 400
+
+    next_month = (first.replace(day=28) + timedelta(days=4)).replace(day=1)
+    query = Booking.query.filter(
+        Booking.booking_date >= first,
+        Booking.booking_date < next_month,
+    )
+
+    raw_barber = request.args.get("barber_id")
+    if raw_barber:
+        barber_id = request.args.get("barber_id", type=int)
+        if not barber_id:
+            return jsonify({"error": "invalid barber_id"}), 400
+        query = query.filter(Booking.barber_id == barber_id)
+
+    days = {}
+    for booking in query.all():
+        key = booking.booking_date.isoformat()
+        item = days.setdefault(
+            key,
+            {"date": key, "total": 0, "confirmed": 0, "completed": 0, "cancelled": 0},
+        )
+        item["total"] += 1
+        if booking.status in item:
+            item[booking.status] += 1
+
+    return jsonify({"month": month, "days": [days[key] for key in sorted(days)]})
 
 
 @app.get("/api/available-slots")
@@ -399,12 +488,31 @@ def admin_bookings():
         return jsonify({"error": "unauthorized"}), 401
 
     query = Booking.query
+    has_date = False
 
     if request.args.get("date"):
         day = parse_date(request.args.get("date"))
         if not day:
             return jsonify({"error": "invalid date"}), 400
-        query = query.filter(Booking.booking_date == day).order_by(Booking.booking_time)
+        query = query.filter(Booking.booking_date == day)
+        has_date = True
+
+    raw_barber = request.args.get("barber_id")
+    if raw_barber:
+        barber_id = request.args.get("barber_id", type=int)
+        if not barber_id:
+            return jsonify({"error": "invalid barber_id"}), 400
+        query = query.filter(Booking.barber_id == barber_id)
+
+    raw_time = request.args.get("time")
+    if raw_time:
+        clock = parse_time(raw_time)
+        if not clock:
+            return jsonify({"error": "invalid time"}), 400
+        query = query.filter(Booking.booking_time == clock)
+
+    if has_date:
+        query = query.order_by(Booking.booking_time, Booking.created_at)
     else:
         query = query.order_by(Booking.created_at.desc())
 
@@ -458,6 +566,13 @@ def admin_blocked_slots():
         if not day:
             return jsonify({"error": "invalid date"}), 400
         query = query.filter(BlockedSlot.blocked_date == day)
+
+    raw_barber = request.args.get("barber_id")
+    if raw_barber:
+        barber_id = request.args.get("barber_id", type=int)
+        if not barber_id:
+            return jsonify({"error": "invalid barber_id"}), 400
+        query = query.filter(BlockedSlot.barber_id == barber_id)
 
     return jsonify([serialize_blocked_slot(slot) for slot in query.all()])
 
