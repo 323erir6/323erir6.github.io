@@ -586,7 +586,7 @@ def admin_bookings():
         query = query.order_by(Booking.created_at.desc())
 
     rows = []
-    for booking in query.all():
+    for booking in query.limit(500).all():
         rows.append(
             {
                 "id": booking.id,
