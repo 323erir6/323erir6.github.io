@@ -30,14 +30,15 @@ jobs:
           assert data["barbers"] == 3, data
           PY
 
-      - name: Verify public catalog endpoints
+      - name: Verify public catalog and availability
         env:
           API: https://barberpoint-api-oneone.onrender.com
         run: |
           set -euo pipefail
           curl --fail --silent --show-error "$API/api/services" > services.json
           curl --fail --silent --show-error "$API/api/barbers" > barbers.json
-          python - <<'PY'
+
+          read SERVICE_ID BARBER_ID < <(python - <<'PY'
           import json
           services=json.load(open("services.json"))
           barbers=json.load(open("barbers.json"))
@@ -45,7 +46,31 @@ jobs:
           assert len(barbers) == 3, barbers
           assert all("id" in x and "code" in x for x in services)
           assert all("id" in x and "code" in x for x in barbers)
+          print(services[0]["id"], barbers[0]["id"])
           PY
+          )
+
+          DAY="$(date -u -d '+7 days' +%F)"
+          curl --fail --silent --show-error             "$API/api/available-slots?barber_id=$BARBER_ID&service_id=$SERVICE_ID&date=$DAY"             > slots.json
+
+          python - <<'PY'
+          import json, re
+          data=json.load(open("slots.json"))
+          assert data["slots"], data
+          assert all(re.fullmatch(r"\d{2}:\d{2}", slot) for slot in data["slots"]), data
+          PY
+
+          STATUS="$(curl --silent --show-error -o invalid-booking.json -w '%{http_code}'             -H 'Content-Type: application/json'             -d "{\"name\":\"Smoke Test\",\"phone\":\"+380000000000\",\"service_id\":$SERVICE_ID,\"barber_id\":$BARBER_ID,\"date\":\"$DAY\",\"time\":\"03:17\"}"             "$API/api/bookings")"
+          test "$STATUS" = "409"
+          cat invalid-booking.json
+
+      - name: Verify admin protection
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          STATUS="$(curl --silent --show-error -o admin.json -w '%{http_code}' "$API/api/admin/bookings")"
+          test "$STATUS" = "401"
 
       - name: Verify GitHub Pages CORS
         env:
