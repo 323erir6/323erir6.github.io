@@ -28,8 +28,6 @@ app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
 
 allowed_origins = [
     "https://323erir6.github.io",
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
 ]
 CORS(
     app,
@@ -438,7 +436,7 @@ def admin_calendar():
         query = query.filter(Booking.barber_id == barber_id)
 
     days = {}
-    for booking in query.all():
+    for booking in query.limit(500).all():
         key = booking.booking_date.isoformat()
         item = days.setdefault(
             key,
