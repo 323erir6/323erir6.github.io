@@ -20,6 +20,7 @@ const labels={service:{},barber:{}};
 
 function safeStorageGet(key){try{return localStorage.getItem(key);}catch{return null;}}
 function safeStorageSet(key,value){try{localStorage.setItem(key,value);}catch{}}
+function escapeHtml(value){const d=document.createElement('div');d.textContent=value??'';return d.innerHTML;}
 function currentLang(){return document.documentElement.lang==='en'?'en':'uk';}
 function message(uk,en,type='error'){status.className='status '+type;status.textContent=currentLang()==='uk'?uk:en;}
 function clearMessage(){status.className='status';status.textContent='';}
@@ -180,9 +181,14 @@ async function loadCatalog(){
 
     barbers.forEach(item=>{
       labels.barber[item.code]={uk:item.name_uk,en:item.name_en};
-      const btn=barberChoices.querySelector(`button[data-value="${item.code}"]`);
-      if(btn)btn.dataset.id=item.id;
     });
+
+    barberChoices.innerHTML=barbers.map(item=>`
+      <button type="button" data-value="${escapeHtml(item.code)}" data-id="${item.id}">
+        <span>${escapeHtml(currentLang()==='uk'?item.name_uk:item.name_en)}</span>
+        <small>${escapeHtml(item.specialization)}</small>
+      </button>
+    `).join('');
 
     renderRemoteLabels();
     bindChoices(serviceChoices,'service');
