@@ -398,13 +398,15 @@ def admin_bookings():
     if not admin_authorized():
         return jsonify({"error": "unauthorized"}), 401
 
-    query = Booking.query.order_by(Booking.booking_date, Booking.booking_time)
+    query = Booking.query
 
     if request.args.get("date"):
         day = parse_date(request.args.get("date"))
         if not day:
             return jsonify({"error": "invalid date"}), 400
-        query = query.filter(Booking.booking_date == day)
+        query = query.filter(Booking.booking_date == day).order_by(Booking.booking_time)
+    else:
+        query = query.order_by(Booking.created_at.desc())
 
     rows = []
     for booking in query.all():
