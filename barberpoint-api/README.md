@@ -13,6 +13,8 @@ Flask + PostgreSQL backend for the BarberPoint portfolio project.
 - PostgreSQL persistence
 - Services and barbers loaded through REST API
 - Dynamic free time slots
+- 30-minute slot grid with working-hours validation
+- Booking horizon limited to 90 days
 - Server-side booking validation
 - PostgreSQL advisory lock to prevent double booking races
 - Admin booking management
@@ -32,6 +34,20 @@ Public:
 Admin, requires `X-Admin-Key`:
 - `GET /api/admin/bookings`
 - `PATCH /api/admin/bookings/:id`
+- `GET /api/admin/blocked-slots`
 - `POST /api/admin/blocked-slots`
+- `DELETE /api/admin/blocked-slots/:id`
 
 Secrets are stored only as Render environment variables and are not committed to GitHub.
+
+## Deployment checks
+
+GitHub Actions runs a production smoke test after pushes to `main`. It verifies:
+
+- the API is reachable
+- PostgreSQL is connected
+- seeded services and barbers are available
+- availability generation works
+- invalid/out-of-hours bookings are rejected server-side
+- admin endpoints reject unauthenticated access
+- GitHub Pages receives the expected CORS header
