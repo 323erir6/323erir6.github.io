@@ -10,7 +10,7 @@
   <title>BarberPoint Admin</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="admin.css?v=20261002-3">
-  <script src="admin.js?v=20261002-5" defer></script>
+  <script src="admin.js?v=20261002-6" defer></script>
 </head>
 <body>
   <main class="admin-shell">
@@ -24,7 +24,7 @@
       <h1>Керування записами</h1>
       <p>Введіть ключ адміністратора. Він зберігається лише до закриття цієї вкладки.</p>
       <form id="loginForm">
-        <label>Admin key<input id="adminKey" type="password" autocomplete="current-password" required></label>
+        <label>Admin key<input id="adminKey" type="password" autocomplete="off" required></label>
         <button type="submit">Увійти</button>
         <p class="status" id="loginStatus"></p>
       </form>
