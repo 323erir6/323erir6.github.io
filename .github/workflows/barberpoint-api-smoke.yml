@@ -27,7 +27,7 @@ jobs:
           assert data["ok"] is True, data
           assert data["database"] == "postgresql", data
           assert data["services"] == 4, data
-          assert data["barbers"] == 3, data
+          assert data["barbers"] >= 3, data
           PY
 
       - name: Verify public catalog and availability
@@ -43,7 +43,7 @@ jobs:
           services=json.load(open("services.json"))
           barbers=json.load(open("barbers.json"))
           assert len(services) == 4, services
-          assert len(barbers) == 3, barbers
+          assert len(barbers) >= 3, barbers
           assert all("id" in x and "code" in x for x in services)
           assert all("id" in x and "code" in x for x in barbers)
           print(services[0]["id"], barbers[0]["id"])
@@ -70,6 +70,10 @@ jobs:
         run: |
           set -euo pipefail
           STATUS="$(curl --silent --show-error -o admin.json -w '%{http_code}' "$API/api/admin/bookings")"
+          test "$STATUS" = "401"
+          STATUS="$(curl --silent --show-error -o calendar.json -w '%{http_code}' "$API/api/admin/calendar?month=2026-10")"
+          test "$STATUS" = "401"
+          STATUS="$(curl --silent --show-error -o barbers-admin.json -w '%{http_code}' "$API/api/admin/barbers")"
           test "$STATUS" = "401"
 
       - name: Verify GitHub Pages CORS
