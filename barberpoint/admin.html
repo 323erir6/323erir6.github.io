@@ -68,13 +68,24 @@
               <option value="60">1 година</option>
               <option value="90">1.5 години</option>
               <option value="120">2 години</option>
-              <option value="480">Весь день</option>
+              <option value="660">Весь робочий день</option>
             </select>
           </label>
           <label class="wide">Причина<input id="blockReason" type="text" maxlength="200" placeholder="Наприклад: перерва"></label>
           <button type="submit">Заблокувати</button>
           <p class="status wide" id="blockStatus"></p>
         </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Заблокований час</h2>
+            <span>Активні ручні блокування для вибраної дати</span>
+          </div>
+          <button class="ghost compact" id="refreshBlocksBtn" type="button">Оновити</button>
+        </div>
+        <div class="blocked-list" id="blockedList"></div>
       </section>
     </section>
   </main>
