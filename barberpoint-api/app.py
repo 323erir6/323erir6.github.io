@@ -1,6 +1,10 @@
+import hmac
 import os
 import re
+import time as time_module
+from collections import defaultdict, deque
 from datetime import date, datetime, time, timedelta
+from threading import Lock
 from zoneinfo import ZoneInfo
 
 from flask import Flask, jsonify, request
@@ -20,13 +24,25 @@ app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["JSON_SORT_KEYS"] = False
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
 
 allowed_origins = [
     "https://323erir6.github.io",
     "http://127.0.0.1:5500",
     "http://localhost:5500",
 ]
-CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": allowed_origins,
+            "methods": ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "X-Admin-Key"],
+            "supports_credentials": False,
+            "max_age": 600,
+        }
+    },
+)
 
 db = SQLAlchemy(app)
 KYIV_TZ = ZoneInfo("Europe/Kyiv")
@@ -35,6 +51,9 @@ CLOSING_TIME = time(21, 0)
 BOOKING_INTERVAL_MINUTES = 30
 MAX_BOOKING_DAYS = 90
 
+_rate_buckets = defaultdict(deque)
+_rate_lock = Lock()
+
 
 def local_now():
     return datetime.now(KYIV_TZ)
@@ -42,6 +61,54 @@ def local_now():
 
 def local_today():
     return local_now().date()
+
+
+def client_ip():
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        return forwarded.split(",", 1)[0].strip() or "unknown"
+    return request.remote_addr or "unknown"
+
+
+def rate_limited(bucket, limit, window_seconds):
+    now = time_module.monotonic()
+    key = f"{bucket}:{client_ip()}"
+
+    with _rate_lock:
+        entries = _rate_buckets[key]
+        cutoff = now - window_seconds
+
+        while entries and entries[0] < cutoff:
+            entries.popleft()
+
+        if len(entries) >= limit:
+            return True
+
+        entries.append(now)
+        return False
+
+
+@app.before_request
+def enforce_rate_limits():
+    if request.path == "/api/bookings" and request.method == "POST":
+        if rate_limited("booking", 6, 15 * 60):
+            return jsonify({"error": "too many booking attempts"}), 429
+
+    if request.path.startswith("/api/admin/"):
+        if rate_limited("admin", 240, 5 * 60):
+            return jsonify({"error": "too many admin requests"}), 429
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000"
+    return response
 
 
 class Service(db.Model):
@@ -244,7 +311,11 @@ def generate_slots(barber_id, day, duration):
 def admin_authorized():
     configured = os.environ.get("ADMIN_KEY")
     supplied = request.headers.get("X-Admin-Key")
-    return bool(configured and supplied and supplied == configured)
+    return bool(
+        configured
+        and supplied
+        and hmac.compare_digest(str(supplied), str(configured))
+    )
 
 
 def unique_barber_code(seed):
