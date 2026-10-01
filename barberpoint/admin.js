@@ -1,3 +1,8 @@
+if(window.top!==window.self){
+  document.documentElement.innerHTML='<head><title>Blocked</title></head><body></body>';
+  throw new Error('Framed admin page blocked');
+}
+
 const API='https://barberpoint-api-oneone.onrender.com';
 
 const loginCard=document.getElementById('loginCard');
