@@ -1,0 +1,82 @@
+name: BarberPoint security audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "barberpoint-api/**"
+      - "barberpoint/**"
+      - ".github/workflows/barberpoint-security.yml"
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Audit Python dependencies
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          pip-audit -r barberpoint-api/requirements.txt
+
+  public-security-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Render deploy on pushes
+        if: github.event_name == 'push'
+        run: sleep 90
+
+      - name: Check API security headers
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          headers="$(curl --fail --silent --show-error -D - -o /dev/null "$API/api/health")"
+          echo "$headers"
+          echo "$headers" | grep -qi '^x-content-type-options: nosniff'
+          echo "$headers" | grep -qi '^x-frame-options: DENY'
+          echo "$headers" | grep -qi '^referrer-policy: no-referrer'
+          echo "$headers" | grep -qi '^cache-control: no-store'
+          echo "$headers" | grep -qi '^strict-transport-security:'
+
+      - name: Reject untrusted CORS origin
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          headers="$(curl --silent --show-error -D - -o /dev/null             -H 'Origin: https://evil.example'             "$API/api/services")"
+          echo "$headers"
+          if echo "$headers" | grep -qi '^access-control-allow-origin:'; then
+            echo "Unexpected CORS allow header for untrusted origin"
+            exit 1
+          fi
+
+      - name: Keep admin API protected
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          for path in /api/admin/bookings /api/admin/barbers '/api/admin/calendar?month=2026-10'; do
+            status="$(curl --silent --show-error -o /dev/null -w '%{http_code}' "$API$path")"
+            test "$status" = "401"
+          done
+
+      - name: Reject oversized request bodies
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          python - <<'PY' > payload.json
+          import json
+          print(json.dumps({"name": "A" * 20000}))
+          PY
+          status="$(curl --silent --show-error -o /dev/null -w '%{http_code}'             -H 'Content-Type: application/json'             --data-binary @payload.json             "$API/api/bookings")"
+          test "$status" = "413"
