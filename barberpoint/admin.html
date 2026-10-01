@@ -7,8 +7,8 @@
   <meta name="theme-color" content="#0d1012">
   <title>BarberPoint Admin</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="admin.css?v=20261002-2">
-  <script src="admin.js?v=20261002-2" defer></script>
+  <link rel="stylesheet" href="admin.css?v=20261002-3">
+  <script src="admin.js?v=20261002-3" defer></script>
 </head>
 <body>
   <main class="admin-shell">
@@ -34,30 +34,102 @@
           <p class="eyebrow">BARBERPOINT / DATABASE</p>
           <h1>Записи</h1>
         </div>
-        <button class="ghost" id="logoutBtn" type="button">Вийти</button>
+        <div class="head-actions">
+          <span class="live-note" id="liveNote"><i></i> автооновлення 5 с</span>
+          <button class="ghost" id="logoutBtn" type="button">Вийти</button>
+        </div>
       </div>
 
-      <div class="toolbar">
-        <label>Дата<input id="filterDate" type="date"></label>
-        <button id="todayBtn" type="button">Сьогодні</button>
-        <button class="ghost" id="allBtn" type="button">Усі</button>
-        <button class="ghost" id="refreshBtn" type="button">Оновити</button><span class="live-note" id="liveNote">Автооновлення: 2 с</span>
-      </div>
+      <div class="overview-grid">
+        <section class="panel calendar-panel">
+          <div class="calendar-title">
+            <div>
+              <p class="eyebrow">КАЛЕНДАР ЗАПИСІВ</p>
+              <h2 id="calendarMonthLabel">Жовтень 2026</h2>
+            </div>
+            <div class="calendar-controls">
+              <button class="icon-btn ghost" id="calendarPrev" type="button" aria-label="Попередній місяць">‹</button>
+              <button class="ghost compact" id="calendarToday" type="button">Сьогодні</button>
+              <button class="icon-btn ghost" id="calendarNext" type="button" aria-label="Наступний місяць">›</button>
+            </div>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span>
+          </div>
+          <div class="admin-calendar" id="calendarGrid"></div>
+          <div class="calendar-legend">
+            <span><i class="dot active"></i> є активні записи</span>
+            <span><i class="dot done"></i> лише завершені</span>
+            <span><i class="dot cancelled"></i> лише скасовані</span>
+          </div>
+        </section>
 
-      <div class="stats">
-        <article><span>Всього</span><b id="countAll">0</b></article>
-        <article><span>Підтверджені</span><b id="countConfirmed">0</b></article>
-        <article><span>Завершені</span><b id="countCompleted">0</b></article>
-        <article><span>Скасовані</span><b id="countCancelled">0</b></article>
+        <aside class="overview-side">
+          <section class="panel filter-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Фільтри</h2>
+                <span>день, майстер і точний час</span>
+              </div>
+            </div>
+            <div class="filter-grid">
+              <label>Дата<input id="filterDate" type="date"></label>
+              <label>Майстер<select id="filterBarber"><option value="">Усі майстри</option></select></label>
+              <label>Час<select id="filterTime"><option value="">Будь-який час</option></select></label>
+            </div>
+            <div class="filter-actions">
+              <button id="todayBtn" type="button">Сьогодні</button>
+              <button class="ghost" id="allBtn" type="button">Скинути</button>
+              <button class="ghost" id="refreshBtn" type="button">Оновити</button>
+            </div>
+          </section>
+
+          <div class="stats">
+            <article><span>Всього</span><b id="countAll">0</b></article>
+            <article><span>Підтверджені</span><b id="countConfirmed">0</b></article>
+            <article><span>Завершені</span><b id="countCompleted">0</b></article>
+            <article><span>Скасовані</span><b id="countCancelled">0</b></article>
+          </div>
+        </aside>
       </div>
 
       <section class="panel">
-        <div class="panel-head"><h2>Список записів</h2><span id="listCaption"></span></div>
+        <div class="panel-head">
+          <div>
+            <h2>Список записів</h2>
+            <span id="listCaption"></span>
+          </div>
+          <span class="result-count" id="resultCount">0 записів</span>
+        </div>
         <div class="booking-list" id="bookingList"></div>
       </section>
 
       <section class="panel">
-        <div class="panel-head"><h2>Заблокувати час</h2><span>відпустка, перерва або ручне блокування</span></div>
+        <div class="panel-head">
+          <div>
+            <h2>Майстри</h2>
+            <span>новий майстер одразу з'явиться в онлайн-записі</span>
+          </div>
+        </div>
+
+        <form class="barber-form" id="barberForm">
+          <label>Ім'я українською<input id="barberNameUk" type="text" maxlength="80" placeholder="Наприклад: Дмитро" required></label>
+          <label>Ім'я англійською<input id="barberNameEn" type="text" maxlength="80" placeholder="Dmytro" required></label>
+          <label class="barber-specialization">Спеціалізація<input id="barberSpecialization" type="text" maxlength="160" placeholder="Fade / Texture / Classic" required></label>
+          <button type="submit">Додати майстра</button>
+          <p class="status barber-form-status" id="barberStatus"></p>
+        </form>
+
+        <div class="barber-list" id="barberList"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Заблокувати час</h2>
+            <span>відпустка, перерва або ручне блокування</span>
+          </div>
+        </div>
         <form class="block-form" id="blockForm">
           <label>Майстер<select id="blockBarber" required></select></label>
           <label>Дата<input id="blockDate" type="date" required></label>
@@ -81,7 +153,7 @@
         <div class="panel-head">
           <div>
             <h2>Заблокований час</h2>
-            <span>Активні ручні блокування для вибраної дати</span>
+            <span>показується з урахуванням вибраної дати та майстра</span>
           </div>
           <button class="ghost compact" id="refreshBlocksBtn" type="button">Оновити</button>
         </div>
