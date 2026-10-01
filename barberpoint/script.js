@@ -265,7 +265,7 @@ function updateSummary(){
   const service=state.service&&labels.service[state.service]?labels.service[state.service][l]:'—';
   const barber=state.barber&&labels.barber[state.barber]?labels.barber[state.barber][l]:'—';
   const date=datePicker.getValue()?datePicker.getDisplay():'—';
-  s.innerHTML=`<b>${l==='uk'?'Ваш запис':'Your booking'}</b><br>${service} · ${barber} · ${date} · ${state.time||'—'}`;
+  s.innerHTML=`<b>${l==='uk'?'Ваш запис':'Your booking'}</b><br>${escapeHtml(service)} · ${escapeHtml(barber)} · ${escapeHtml(date)} · ${escapeHtml(state.time||'—')}`;
 }
 
 const clientName=document.getElementById('clientName');
@@ -277,7 +277,7 @@ const orderSummary=document.getElementById('orderSummary');
 let modalReturnFocus=null;
 function openModal(rows){
   const l=currentLang();
-  orderSummary.innerHTML=rows.map(([ukLabel,enLabel,value])=>`<div><span>${l==='uk'?ukLabel:enLabel}</span><b>${value||'—'}</b></div>`).join('');
+  orderSummary.innerHTML=rows.map(([ukLabel,enLabel,value])=>`<div><span>${escapeHtml(l==='uk'?ukLabel:enLabel)}</span><b>${escapeHtml(value||'—')}</b></div>`).join('');
   modalReturnFocus=document.activeElement;
   orderModal.hidden=false;
   document.body.classList.add('modal-open');
