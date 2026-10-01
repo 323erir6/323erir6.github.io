@@ -1,11 +1,12 @@
 import os
 import re
 from datetime import date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, text
 
 app = Flask(__name__)
 
@@ -17,6 +18,7 @@ elif database_url.startswith("postgresql://"):
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["JSON_SORT_KEYS"] = False
 
 allowed_origins = [
@@ -27,6 +29,15 @@ allowed_origins = [
 CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
 db = SQLAlchemy(app)
+KYIV_TZ = ZoneInfo("Europe/Kyiv")
+
+
+def local_now():
+    return datetime.now(KYIV_TZ)
+
+
+def local_today():
+    return local_now().date()
 
 
 class Service(db.Model):
@@ -206,7 +217,7 @@ def generate_slots(barber_id, day, duration):
     result = []
 
     while cursor + timedelta(minutes=duration) <= closing:
-        if day > date.today() or cursor.time() > datetime.now().time():
+        if day > local_today() or cursor.time() > local_now().time().replace(tzinfo=None):
             if is_slot_free(barber_id, day, cursor.time(), duration):
                 result.append(cursor.strftime("%H:%M"))
         cursor += timedelta(minutes=30)
@@ -237,7 +248,19 @@ def root():
 
 @app.get("/api/health")
 def health():
-    return jsonify({"ok": True})
+    try:
+        db.session.execute(text("SELECT 1"))
+        return jsonify(
+            {
+                "ok": True,
+                "database": "postgresql" if database_url.startswith("postgresql+") else "sqlite",
+                "services": Service.query.count(),
+                "barbers": Barber.query.filter_by(active=True).count(),
+            }
+        )
+    except Exception:
+        db.session.rollback()
+        return jsonify({"ok": False, "database": "unavailable"}), 503
 
 
 @app.get("/api/services")
@@ -261,7 +284,7 @@ def available_slots():
     if not barber_id or not service_id or not day:
         return jsonify({"error": "barber_id, service_id and date are required"}), 400
 
-    if day < date.today():
+    if day < local_today():
         return jsonify({"error": "date is in the past"}), 400
 
     barber = db.session.get(Barber, barber_id)
@@ -296,7 +319,7 @@ def create_booking():
         return jsonify({"error": "invalid phone"}), 400
     if not isinstance(barber_id, int) or not isinstance(service_id, int) or not day or not clock:
         return jsonify({"error": "invalid booking data"}), 400
-    if day < date.today():
+    if day < local_today():
         return jsonify({"error": "date is in the past"}), 400
 
     barber = db.session.get(Barber, barber_id)
@@ -304,7 +327,15 @@ def create_booking():
     if not barber or not barber.active or not service:
         return jsonify({"error": "invalid barber or service"}), 404
 
+    if database_url.startswith("postgresql+"):
+        lock_key = f"barberpoint:{barber_id}:{day.isoformat()}"
+        db.session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtext(:lock_key))"),
+            {"lock_key": lock_key},
+        )
+
     if not is_slot_free(barber_id, day, clock, service.duration_minutes):
+        db.session.rollback()
         return jsonify({"error": "slot is no longer available"}), 409
 
     booking = Booking(
@@ -434,6 +465,10 @@ def admin_block_slot():
 with app.app_context():
     db.create_all()
     seed_data()
+    print(
+        f"BarberPoint database ready: {Service.query.count()} services, "
+        f"{Barber.query.filter_by(active=True).count()} active barbers"
+    )
 
 
 if __name__ == "__main__":
