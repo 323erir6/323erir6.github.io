@@ -27,6 +27,10 @@ let bookings=[];
 let blocked=[];
 let barbers=[];
 let calendarDays=new Map();
+let bookingSnapshot='';
+let calendarSnapshot='';
+let bookingRequestSeq=0;
+let calendarRequestSeq=0;
 
 function kyivDate(){
   const parts=new Intl.DateTimeFormat('en-CA',{
@@ -149,9 +153,25 @@ function buildBookingParams(){
 }
 
 async function loadBookings(){
-  bookingList.innerHTML='<div class="empty">Завантаження...</div>';
+  const requestId=++bookingRequestSeq;
   const qs=buildBookingParams();
-  bookings=await request('/api/admin/bookings'+(qs?'?'+qs:''));
+
+  if(!bookingList.children.length){
+    bookingList.innerHTML='<div class="empty">Завантаження...</div>';
+  }
+
+  const nextBookings=await request('/api/admin/bookings'+(qs?'?'+qs:''));
+  if(requestId!==bookingRequestSeq)return;
+
+  const nextSnapshot=JSON.stringify({
+    filters:[filterDate.value,filterBarber.value,filterTime.value],
+    rows:nextBookings
+  });
+
+  if(nextSnapshot===bookingSnapshot)return;
+
+  bookings=nextBookings;
+  bookingSnapshot=nextSnapshot;
   renderBookings();
 }
 
@@ -166,10 +186,24 @@ async function loadBlocked(){
 }
 
 async function loadCalendar(){
+  const requestId=++calendarRequestSeq;
   const params=new URLSearchParams({month:monthKey(calendarView)});
   if(filterBarber.value)params.set('barber_id',filterBarber.value);
+
   const data=await request('/api/admin/calendar?'+params.toString());
+  if(requestId!==calendarRequestSeq)return;
+
+  const nextSnapshot=JSON.stringify({
+    month:monthKey(calendarView),
+    barber:filterBarber.value,
+    selectedDate:filterDate.value,
+    days:data.days
+  });
+
+  if(nextSnapshot===calendarSnapshot)return;
+
   calendarDays=new Map(data.days.map(day=>[day.date,day]));
+  calendarSnapshot=nextSnapshot;
   renderCalendar();
 }
 
@@ -212,6 +246,7 @@ function renderCalendar(){
   calendarGrid.querySelectorAll('[data-date]').forEach(btn=>{
     btn.addEventListener('click',async()=>{
       filterDate.value=btn.dataset.date;
+      calendarSnapshot='';
       renderCalendar();
       await Promise.all([loadBookings(),loadBlocked()]);
     });
@@ -318,6 +353,8 @@ async function changeStatus(btn){
       method:'PATCH',
       body:JSON.stringify({status:btn.dataset.status})
     });
+    bookingSnapshot='';
+    calendarSnapshot='';
     await Promise.all([loadBookings(),loadCalendar()]);
   }catch(error){
     alert(error.status===401?'Невірний admin key.':'Не вдалося оновити запис.');
@@ -384,6 +421,8 @@ document.getElementById('logoutBtn').addEventListener('click',()=>{
 document.getElementById('todayBtn').addEventListener('click',async()=>{
   filterDate.value=today;
   calendarView=parseLocalDate(today.slice(0,7)+'-01');
+  bookingSnapshot='';
+  calendarSnapshot='';
   await refreshDashboard();
 });
 
@@ -392,6 +431,8 @@ document.getElementById('allBtn').addEventListener('click',async()=>{
   filterBarber.value='';
   filterTime.value='';
   calendarView=parseLocalDate(today.slice(0,7)+'-01');
+  bookingSnapshot='';
+  calendarSnapshot='';
   await refreshDashboard();
 });
 
@@ -400,25 +441,39 @@ document.getElementById('refreshBlocksBtn').addEventListener('click',loadBlocked
 
 filterDate.addEventListener('change',async()=>{
   if(filterDate.value)calendarView=parseLocalDate(filterDate.value.slice(0,7)+'-01');
+  bookingSnapshot='';
+  calendarSnapshot='';
   await refreshDashboard();
 });
 
-filterBarber.addEventListener('change',refreshDashboard);
-filterTime.addEventListener('change',loadBookings);
+filterBarber.addEventListener('change',async()=>{
+  bookingSnapshot='';
+  calendarSnapshot='';
+  await refreshDashboard();
+});
+
+filterTime.addEventListener('change',async()=>{
+  bookingSnapshot='';
+  await loadBookings();
+});
 
 document.getElementById('calendarPrev').addEventListener('click',async()=>{
   calendarView=new Date(calendarView.getFullYear(),calendarView.getMonth()-1,1);
+  calendarSnapshot='';
   await loadCalendar();
 });
 
 document.getElementById('calendarNext').addEventListener('click',async()=>{
   calendarView=new Date(calendarView.getFullYear(),calendarView.getMonth()+1,1);
+  calendarSnapshot='';
   await loadCalendar();
 });
 
 document.getElementById('calendarToday').addEventListener('click',async()=>{
   filterDate.value=today;
   calendarView=parseLocalDate(today.slice(0,7)+'-01');
+  bookingSnapshot='';
+  calendarSnapshot='';
   await refreshDashboard();
 });
 
