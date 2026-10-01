@@ -1,0 +1,57 @@
+name: BarberPoint API smoke test
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Render deployment
+        run: sleep 90
+
+      - name: Verify PostgreSQL-backed health endpoint
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 8 --retry-delay 10 "$API/api/health" > health.json
+          cat health.json
+          python - <<'PY'
+          import json
+          data=json.load(open("health.json"))
+          assert data["ok"] is True, data
+          assert data["database"] == "postgresql", data
+          assert data["services"] == 4, data
+          assert data["barbers"] == 3, data
+          PY
+
+      - name: Verify public catalog endpoints
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error "$API/api/services" > services.json
+          curl --fail --silent --show-error "$API/api/barbers" > barbers.json
+          python - <<'PY'
+          import json
+          services=json.load(open("services.json"))
+          barbers=json.load(open("barbers.json"))
+          assert len(services) == 4, services
+          assert len(barbers) == 3, barbers
+          assert all("id" in x and "code" in x for x in services)
+          assert all("id" in x and "code" in x for x in barbers)
+          PY
+
+      - name: Verify GitHub Pages CORS
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          headers="$(curl --fail --silent --show-error -D - -o /dev/null             -H 'Origin: https://323erir6.github.io'             "$API/api/services")"
+          echo "$headers"
+          echo "$headers" | grep -qi 'Access-Control-Allow-Origin: https://323erir6.github.io'
