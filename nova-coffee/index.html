@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="NOVA Coffee — modern cafe concept website by OneOne.">
+  <meta name="theme-color" content="#f4efe7">
+  <title>NOVA Coffee — Concept by OneOne</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+<header class="nav wrap">
+  <a class="brand" href="#top">NOVA<span>.</span></a>
+  <nav>
+    <a href="#menu" data-uk="Меню" data-en="Menu">Меню</a>
+    <a href="#space" data-uk="Простір" data-en="Space">Простір</a>
+    <a href="#reserve" data-uk="Бронювання" data-en="Reserve">Бронювання</a>
+    <button id="langSwitch" type="button">EN</button>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-image">
+      <img src="https://images.unsplash.com/photo-1769184618290-3306edcc3b02?auto=format&fit=crop&w=2200&q=86" alt="Сучасна кав'ярня" fetchpriority="high">
+      <div class="shade"></div>
+    </div>
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">COFFEE / KYIV</p>
+        <h1 data-uk="Кава, заради якої хочеться затриматись." data-en="Coffee worth staying for.">Кава, заради якої хочеться затриматись.</h1>
+        <p data-uk="Кава, свіжа випічка і простір для ранкових зустрічей, роботи та неспішних розмов." data-en="Coffee, fresh pastries and a space for morning meetings, work and slow conversations.">Кава, свіжа випічка і простір для ранкових зустрічей, роботи та неспішних розмов.</p>
+        <div class="actions">
+          <a class="btn dark" href="#menu" data-uk="Переглянути меню" data-en="View menu">Переглянути меню</a>
+          <a class="btn light" href="#reserve" data-uk="Забронювати столик" data-en="Reserve a table">Забронювати столик</a>
+        </div>
+      </div>
+      <div class="hero-note"><span>07:30 — 21:00</span><span>KYIV / PODIL</span></div>
+    </div>
+  </section>
+
+  <section class="marquee" aria-hidden="true"><div class="marquee-track"><div class="marquee-group"><span>ESPRESSO</span><i></i><span>FILTER</span><i></i><span>PASTRY</span><i></i><span>BREAKFAST</span><i></i><span>COFFEE</span><i></i></div></div></section>
+
+  <section id="menu" class="section wrap">
+    <div class="section-head">
+      <div><p class="eyebrow" data-uk="МЕНЮ" data-en="MENU">МЕНЮ</p><h2 data-uk="Класика і трохи більше." data-en="Classics, plus a little more.">Класика і трохи більше.</h2></div>
+      <div class="filters" role="group">
+        <button class="active" data-filter="all" data-uk="Все" data-en="All">Все</button>
+        <button data-filter="coffee" data-uk="Кава" data-en="Coffee">Кава</button>
+        <button data-filter="food" data-uk="Їжа" data-en="Food">Їжа</button>
+      </div>
+    </div>
+    <div class="menu-grid">
+      <article data-cat="coffee"><span>01</span><div><h3>Espresso</h3><p data-uk="Подвійний шот, зерно дня" data-en="Double shot, beans of the day">Подвійний шот, зерно дня</p></div><b>65 ₴</b></article>
+      <article data-cat="coffee"><span>02</span><div><h3>Americano</h3><p data-uk="Еспресо, гаряча вода" data-en="Espresso, hot water">Еспресо, гаряча вода</p></div><b>70 ₴</b></article>
+      <article data-cat="coffee"><span>03</span><div><h3>Cappuccino</h3><p data-uk="Подвійний еспресо, текстуроване молоко" data-en="Double espresso, textured milk">Подвійний еспресо, текстуроване молоко</p></div><b>90 ₴</b></article>
+      <article data-cat="coffee"><span>04</span><div><h3>Flat White</h3><p data-uk="Подвійний еспресо, молоко" data-en="Double espresso, milk">Подвійний еспресо, молоко</p></div><b>95 ₴</b></article>
+      <article data-cat="coffee"><span>05</span><div><h3>Latte</h3><p data-uk="Еспресо, молоко, ніжна молочна піна" data-en="Espresso, milk, silky foam">Еспресо, молоко, ніжна молочна піна</p></div><b>105 ₴</b></article>
+      <article data-cat="coffee"><span>06</span><div><h3>V60</h3><p data-uk="Зерно на вибір, ручне заварювання" data-en="Choice of beans, hand brewed">Зерно на вибір, ручне заварювання</p></div><b>120 ₴</b></article>
+      <article data-cat="coffee"><span>07</span><div><h3>Batch Brew</h3><p data-uk="Фільтр-кава дня" data-en="Daily filter coffee">Фільтр-кава дня</p></div><b>90 ₴</b></article>
+      <article data-cat="food"><span>08</span><div><h3>Croissant</h3><p data-uk="Масляний круасан, випікаємо щодня" data-en="Butter croissant, baked daily">Масляний круасан, випікаємо щодня</p></div><b>90 ₴</b></article>
+      <article data-cat="food"><span>09</span><div><h3>Almond Croissant</h3><p data-uk="Мигдальний крем, пластівці мигдалю" data-en="Almond cream, toasted almonds">Мигдальний крем, пластівці мигдалю</p></div><b>125 ₴</b></article>
+      <article data-cat="food"><span>10</span><div><h3>Avocado Toast</h3><p data-uk="Заквасний хліб, авокадо, яйце" data-en="Sourdough, avocado, egg">Заквасний хліб, авокадо, яйце</p></div><b>210 ₴</b></article>
+      <article data-cat="food"><span>11</span><div><h3>Egg Sandwich</h3><p data-uk="Бріош, яйце, сир, зелень" data-en="Brioche, egg, cheese, greens">Бріош, яйце, сир, зелень</p></div><b>180 ₴</b></article>
+      <article data-cat="food"><span>12</span><div><h3>Granola Bowl</h3><p data-uk="Гранола, йогурт, сезонні ягоди" data-en="Granola, yogurt, seasonal berries">Гранола, йогурт, сезонні ягоди</p></div><b>175 ₴</b></article>
+      <article data-cat="food"><span>13</span><div><h3>Basque Cheesecake</h3><p data-uk="Кремовий баскський чизкейк" data-en="Creamy Basque cheesecake">Кремовий баскський чизкейк</p></div><b>145 ₴</b></article>
+      <article data-cat="food"><span>14</span><div><h3>Cinnamon Bun</h3><p data-uk="Кориця, вершкова глазур" data-en="Cinnamon, cream glaze">Кориця, вершкова глазур</p></div><b>110 ₴</b></article>
+    </div>
+  </section>
+
+  <section id="space" class="section gallery-wrap">
+    <div class="wrap">
+      <p class="eyebrow" data-uk="ПРОСТІР" data-en="THE SPACE">ПРОСТІР</p>
+      <h2 data-uk="Місце для паузи посеред міста." data-en="A pause in the middle of the city.">Місце для паузи посеред міста.</h2>
+      <div class="gallery">
+        <figure class="g1"><img src="https://images.unsplash.com/photo-1776336285453-42ca9aba60d7?auto=format&fit=crop&w=1800&q=84" alt="Кава та випічка на столі" loading="lazy"><figcaption data-uk="Сніданки весь день" data-en="All-day breakfast">Сніданки весь день</figcaption></figure>
+        <figure class="g2"><img src="https://images.unsplash.com/photo-1769138886135-93d1dd8ac06a?auto=format&fit=crop&w=1600&q=84" alt="Круасан і кава" loading="lazy"><figcaption data-uk="Свіжа випічка" data-en="Fresh pastry">Свіжа випічка</figcaption></figure>
+        <div class="statement"><span>BE HERE.</span><p data-uk="Wi-Fi, розетки біля столів і достатньо простору, щоб працювати або просто нікуди не поспішати." data-en="Wi-Fi, outlets by the tables and enough room to work or simply slow down.">Wi-Fi, розетки біля столів і достатньо простору, щоб працювати або просто нікуди не поспішати.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reserve" class="section reserve">
+    <div class="wrap reserve-grid">
+      <div>
+        <p class="eyebrow" data-uk="БРОНЮВАННЯ" data-en="RESERVATION">БРОНЮВАННЯ</p>
+        <h2 data-uk="Оберіть свій столик." data-en="Choose your table.">Оберіть свій столик.</h2>
+
+        <div class="table-map-card">
+          <div class="table-map-head"><b data-uk="Схема залу" data-en="Floor plan">Схема залу</b><span><i></i><span data-uk="доступний" data-en="available">доступний</span></span></div>
+          <div class="table-map" id="tableMap" aria-label="Cafe table map">
+            <div class="window-zone" data-uk="ВІКНО" data-en="WINDOW">ВІКНО</div>
+            <div class="wall-zone" data-uk="СТІНА" data-en="WALL">СТІНА</div>
+            <div class="bar-zone" data-uk="БАР" data-en="BAR">БАР</div>
+            <div class="entrance-zone" data-uk="ВХІД" data-en="ENTRANCE">ВХІД</div>
+            <button type="button" class="table-node t1" data-table="1" data-seats="2"><b>1</b><small>2</small></button>
+            <button type="button" class="table-node t2" data-table="2" data-seats="2"><b>2</b><small>2</small></button>
+            <button type="button" class="table-node t3 large" data-table="3" data-seats="4"><b>3</b><small>4</small></button>
+            <button type="button" class="table-node t4" data-table="4" data-seats="2"><b>4</b><small>2</small></button>
+            <button type="button" class="table-node t5 large" data-table="5" data-seats="4"><b>5</b><small>4</small></button>
+            <button type="button" class="table-node t6" data-table="6" data-seats="2"><b>6</b><small>2</small></button>
+            <button type="button" class="table-node t7 large" data-table="7" data-seats="4"><b>7</b><small>4</small></button>
+            <button type="button" class="table-node t8" data-table="8" data-seats="2"><b>8</b><small>2</small></button>
+          </div>
+        </div>
+      </div>
+
+      <form id="reserveForm" novalidate>
+        <label><span data-uk="Ім'я" data-en="Name">Ім'я</span><input required name="name" autocomplete="name"></label>
+        <label><span data-uk="Телефон" data-en="Phone">Телефон</span><input required name="phone" inputmode="tel" autocomplete="tel"></label>
+
+        <label class="date-field"><span data-uk="Дата" data-en="Date">Дата</span>
+          <div class="date-picker" data-date-picker>
+            <input type="hidden" name="date">
+            <button class="date-trigger" type="button" aria-haspopup="dialog" aria-expanded="false"><span class="date-value">Оберіть дату</span><span class="date-icon" aria-hidden="true"></span></button>
+            <div class="calendar-popover" hidden></div>
+          </div>
+        </label>
+
+        <label><span data-uk="Час" data-en="Time">Час</span>
+          <div class="time-entry">
+            <input required id="reservationTime" name="time" type="text" inputmode="numeric" autocomplete="off" maxlength="5" value="18:00" placeholder="18:00" aria-label="Reservation time">
+            <span class="time-hint">HH:MM</span>
+          </div>
+        </label>
+        <label><span data-uk="Гостей" data-en="Guests">Гостей</span>
+          <div class="guest-picker" id="guestPicker">
+            <input type="hidden" name="guests" value="2">
+            <button type="button" data-value="1">1</button>
+            <button type="button" class="selected" data-value="2">2</button>
+            <button type="button" data-value="3">3</button>
+            <button type="button" data-value="4">4</button>
+            <button type="button" data-value="5+">5+</button>
+          </div>
+        </label>
+        <label class="table-field"><span data-uk="Столик" data-en="Table">Столик</span>
+          <div class="custom-select" id="tablePicker">
+            <input type="hidden" name="table" value="any">
+            <button class="select-trigger" type="button" aria-expanded="false">
+              <span class="select-value" data-uk="Будь-який" data-en="Any table">Будь-який</span><span class="select-chevron" aria-hidden="true"></span>
+            </button>
+            <div class="select-menu" hidden>
+              <button type="button" class="select-option selected" data-value="any" data-uk="Будь-який" data-en="Any table">Будь-який</button>
+              <button type="button" class="select-option" data-value="1" data-seats="2" data-uk="№1 — біля вікна, 2 місця" data-en="#1 — by the window, 2 seats">№1 — біля вікна, 2 місця</button>
+              <button type="button" class="select-option" data-value="2" data-seats="2" data-uk="№2 — біля вікна, 2 місця" data-en="#2 — by the window, 2 seats">№2 — біля вікна, 2 місця</button>
+              <button type="button" class="select-option" data-value="3" data-seats="4" data-uk="№3 — біля вікна, 4 місця" data-en="#3 — by the window, 4 seats">№3 — біля вікна, 4 місця</button>
+              <button type="button" class="select-option" data-value="4" data-seats="2" data-uk="№4 — центр залу, 2 місця" data-en="#4 — center, 2 seats">№4 — центр залу, 2 місця</button>
+              <button type="button" class="select-option" data-value="5" data-seats="4" data-uk="№5 — центр залу, 4 місця" data-en="#5 — center, 4 seats">№5 — центр залу, 4 місця</button>
+              <button type="button" class="select-option" data-value="6" data-seats="2" data-uk="№6 — біля стіни, 2 місця" data-en="#6 — by the wall, 2 seats">№6 — біля стіни, 2 місця</button>
+              <button type="button" class="select-option" data-value="7" data-seats="4" data-uk="№7 — біля стіни, 4 місця" data-en="#7 — by the wall, 4 seats">№7 — біля стіни, 4 місця</button>
+              <button type="button" class="select-option" data-value="8" data-seats="2" data-uk="№8 — біля стіни, 2 місця" data-en="#8 — by the wall, 2 seats">№8 — біля стіни, 2 місця</button>
+            </div>
+          </div>
+        </label>
+        <button class="btn dark" type="submit" data-uk="Забронювати" data-en="Reserve">Забронювати</button>
+        <p id="status" class="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap footer"><div><a class="brand" href="#top">NOVA<span>.</span></a><p data-uk="Концепт-сайт для портфоліо OneOne." data-en="Concept website for the OneOne portfolio.">Концепт-сайт для портфоліо OneOne.</p></div><div><span>KYIV / 2026</span><a href="../index.html">← OneOne Portfolio</a></div></footer>
+
+<div class="order-modal" id="orderModal" hidden>
+  <div class="order-modal-backdrop" data-modal-close></div>
+  <section class="order-modal-card" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+    <p class="eyebrow" data-uk="БРОНЮВАННЯ ПІДТВЕРДЖЕНО" data-en="RESERVATION CONFIRMED">БРОНЮВАННЯ ПІДТВЕРДЖЕНО</p>
+    <h3 id="orderModalTitle" data-uk="Столик зарезервовано." data-en="Your table is reserved.">Столик зарезервовано.</h3>
+    <div class="order-summary" id="orderSummary"></div>
+    <button class="btn dark modal-ok" type="button" data-modal-close>OK</button>
+  </section>
+</div>
+</body>
+</html>
