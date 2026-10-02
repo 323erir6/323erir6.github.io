@@ -79,6 +79,10 @@ def enforce_rate_limits():
         if rate_limited("booking", 6, 15 * 60):
             return jsonify({"error": "too many booking attempts"}), 429
 
+    if request.path == "/api/reviews" and request.method == "POST":
+        if rate_limited("review", 5, 60 * 60):
+            return jsonify({"error": "too many review attempts"}), 429
+
     if request.path.startswith("/api/admin/"):
         if rate_limited("admin", 240, 5 * 60):
             return jsonify({"error": "too many admin requests"}), 429
@@ -426,6 +430,70 @@ def create_booking():
                     "date": booking["booking_date"],
                     "time": str(booking["booking_time"])[:5],
                     "status": booking["status"],
+                },
+            }
+        ),
+        201,
+    )
+
+
+@app.get("/api/reviews")
+def reviews():
+    data, error = require_store({"op": "reviews"})
+    if error:
+        return error
+
+    rows = []
+    for item in data:
+        rows.append(
+            {
+                "id": item["id"],
+                "client_name": item["client_name"],
+                "rating": item["rating"],
+                "text": item["review_text"],
+                "created_at": item["created_at"],
+            }
+        )
+    return jsonify(rows)
+
+
+@app.post("/api/reviews")
+def create_review():
+    payload = request.get_json(silent=True) or {}
+    phone = str(payload.get("phone", "")).strip()
+    text_value = str(payload.get("text", "")).strip()
+    rating = payload.get("rating")
+
+    if len(phone) > 40 or len(re.sub(r"\D", "", phone)) < 7:
+        return jsonify({"error": "invalid phone"}), 400
+    if not isinstance(rating, int) or rating < 1 or rating > 5:
+        return jsonify({"error": "invalid rating"}), 400
+    if len(text_value) < 3 or len(text_value) > 1000:
+        return jsonify({"error": "invalid review"}), 400
+
+    status_code, data = store_call(
+        {
+            "op": "create_review",
+            "phone": phone,
+            "rating": rating,
+            "review_text": text_value,
+        }
+    )
+
+    if status_code >= 300:
+        return jsonify(data), status_code
+
+    review = data.get("review", {})
+    return (
+        jsonify(
+            {
+                "success": True,
+                "review": {
+                    "id": review.get("id"),
+                    "client_name": review.get("client_name"),
+                    "rating": review.get("rating"),
+                    "text": review.get("review_text"),
+                    "created_at": review.get("created_at"),
                 },
             }
         ),
