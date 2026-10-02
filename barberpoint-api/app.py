@@ -6,32 +6,18 @@ import time as time_module
 import urllib.error
 import urllib.request
 from collections import defaultdict, deque
-from datetime import date, datetime, time, timedelta
+from datetime import datetime, time, timedelta
 from threading import Lock
 from zoneinfo import ZoneInfo
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import UniqueConstraint, text
 
 app = Flask(__name__)
-
-database_url = os.environ.get("DATABASE_URL", "sqlite:///barberpoint.db")
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
-elif database_url.startswith("postgresql://"):
-    database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
-app.config["JSON_SORT_KEYS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
+app.config["JSON_SORT_KEYS"] = False
 
-allowed_origins = [
-    "https://323erir6.github.io",
-]
+allowed_origins = ["https://323erir6.github.io"]
 CORS(
     app,
     resources={
@@ -45,7 +31,6 @@ CORS(
     },
 )
 
-db = SQLAlchemy(app)
 KYIV_TZ = ZoneInfo("Europe/Kyiv")
 OPENING_TIME = time(10, 0)
 CLOSING_TIME = time(21, 0)
@@ -78,7 +63,6 @@ def rate_limited(bucket, limit, window_seconds):
     with _rate_lock:
         entries = _rate_buckets[key]
         cutoff = now - window_seconds
-
         while entries and entries[0] < cutoff:
             entries.popleft()
 
@@ -112,149 +96,22 @@ def add_security_headers(response):
     return response
 
 
-class Service(db.Model):
-    __tablename__ = "services"
-
-    id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(32), unique=True, nullable=False)
-    name_uk = db.Column(db.String(120), nullable=False)
-    name_en = db.Column(db.String(120), nullable=False)
-    price = db.Column(db.Integer, nullable=False)
-    duration_minutes = db.Column(db.Integer, nullable=False)
-
-
-class Barber(db.Model):
-    __tablename__ = "barbers"
-
-    id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(32), unique=True, nullable=False)
-    name_uk = db.Column(db.String(80), nullable=False)
-    name_en = db.Column(db.String(80), nullable=False)
-    specialization = db.Column(db.String(160), nullable=False)
-    active = db.Column(db.Boolean, nullable=False, default=True)
-
-
-class Booking(db.Model):
-    __tablename__ = "bookings"
-
-    id = db.Column(db.Integer, primary_key=True)
-    client_name = db.Column(db.String(120), nullable=False)
-    phone = db.Column(db.String(40), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey("services.id"), nullable=False)
-    barber_id = db.Column(db.Integer, db.ForeignKey("barbers.id"), nullable=False)
-    booking_date = db.Column(db.Date, nullable=False, index=True)
-    booking_time = db.Column(db.Time, nullable=False)
-    duration_minutes = db.Column(db.Integer, nullable=False)
-    status = db.Column(db.String(24), nullable=False, default="confirmed")
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    service = db.relationship("Service")
-    barber = db.relationship("Barber")
-
-
-class BlockedSlot(db.Model):
-    __tablename__ = "blocked_slots"
-    __table_args__ = (
-        UniqueConstraint("barber_id", "blocked_date", "blocked_time", name="uq_blocked_slot"),
-    )
-
-    id = db.Column(db.Integer, primary_key=True)
-    barber_id = db.Column(db.Integer, db.ForeignKey("barbers.id"), nullable=False)
-    blocked_date = db.Column(db.Date, nullable=False, index=True)
-    blocked_time = db.Column(db.Time, nullable=False)
-    duration_minutes = db.Column(db.Integer, nullable=False, default=30)
-    reason = db.Column(db.String(200))
-
-    barber = db.relationship("Barber")
-
-
-SERVICES = [
-    ("haircut", "Чоловіча стрижка", "Haircut", 650, 60),
-    ("beard", "Борода", "Beard trim", 400, 30),
-    ("combo", "Стрижка + борода", "Haircut + Beard", 950, 90),
-    ("buzz", "Стрижка машинкою", "Buzz cut", 450, 45),
-]
-
-BARBERS = [
-    ("andrii", "Андрій", "Andrii", "Fade / Texture / Classic"),
-    ("max", "Максим", "Max", "Beard / Crop / Styling"),
-    ("oleksii", "Олексій", "Oleksii", "Classic / Scissor / Long hair"),
-]
-
-
-def seed_data():
-    if Service.query.count() == 0:
-        for code, uk, en, price, duration in SERVICES:
-            db.session.add(
-                Service(
-                    code=code,
-                    name_uk=uk,
-                    name_en=en,
-                    price=price,
-                    duration_minutes=duration,
-                )
-            )
-
-    if Barber.query.count() == 0:
-        for code, uk, en, specialization in BARBERS:
-            db.session.add(
-                Barber(
-                    code=code,
-                    name_uk=uk,
-                    name_en=en,
-                    specialization=specialization,
-                )
-            )
-
-    db.session.commit()
-
-
-def serialize_service(service):
-    return {
-        "id": service.id,
-        "code": service.code,
-        "name_uk": service.name_uk,
-        "name_en": service.name_en,
-        "price": service.price,
-        "duration_minutes": service.duration_minutes,
-    }
-
-
-def serialize_barber(barber):
-    return {
-        "id": barber.id,
-        "code": barber.code,
-        "name_uk": barber.name_uk,
-        "name_en": barber.name_en,
-        "specialization": barber.specialization,
-        "active": barber.active,
-    }
-
-
-def serialize_blocked_slot(slot):
-    return {
-        "id": slot.id,
-        "barber_id": slot.barber_id,
-        "barber": serialize_barber(slot.barber),
-        "date": slot.blocked_date.isoformat(),
-        "time": slot.blocked_time.strftime("%H:%M"),
-        "duration_minutes": slot.duration_minutes,
-        "reason": slot.reason,
-    }
-
-
 def parse_date(value):
     try:
-        return datetime.strptime(value, "%Y-%m-%d").date()
+        return datetime.strptime(str(value), "%Y-%m-%d").date()
     except (TypeError, ValueError):
         return None
 
 
 def parse_time(value):
-    try:
-        return datetime.strptime(value, "%H:%M").time()
-    except (TypeError, ValueError):
+    if value is None:
         return None
+    for fmt in ("%H:%M:%S", "%H:%M"):
+        try:
+            return datetime.strptime(str(value), fmt).time()
+        except ValueError:
+            pass
+    return None
 
 
 def combine(day, clock):
@@ -267,48 +124,6 @@ def overlaps(start_a, duration_a, start_b, duration_b):
     return start_a < end_b and start_b < end_a
 
 
-def is_slot_free(barber_id, day, clock, duration):
-    candidate = combine(day, clock)
-
-    bookings = Booking.query.filter(
-        Booking.barber_id == barber_id,
-        Booking.booking_date == day,
-        Booking.status.in_(["confirmed", "pending"]),
-    ).all()
-
-    for booking in bookings:
-        existing = combine(day, booking.booking_time)
-        if overlaps(candidate, duration, existing, booking.duration_minutes):
-            return False
-
-    blocked = BlockedSlot.query.filter(
-        BlockedSlot.barber_id == barber_id,
-        BlockedSlot.blocked_date == day,
-    ).all()
-
-    for slot in blocked:
-        existing = combine(day, slot.blocked_time)
-        if overlaps(candidate, duration, existing, slot.duration_minutes):
-            return False
-
-    return True
-
-
-def generate_slots(barber_id, day, duration):
-    opening = datetime.combine(day, OPENING_TIME)
-    closing = datetime.combine(day, CLOSING_TIME)
-    cursor = opening
-    result = []
-
-    while cursor + timedelta(minutes=duration) <= closing:
-        if day > local_today() or cursor.time() > local_now().time().replace(tzinfo=None):
-            if is_slot_free(barber_id, day, cursor.time(), duration):
-                result.append(cursor.strftime("%H:%M"))
-        cursor += timedelta(minutes=BOOKING_INTERVAL_MINUTES)
-
-    return result
-
-
 def admin_authorized():
     configured = os.environ.get("ADMIN_KEY")
     supplied = request.headers.get("X-Admin-Key")
@@ -319,14 +134,152 @@ def admin_authorized():
     )
 
 
-def unique_barber_code(seed):
+def store_call(payload, timeout=20):
+    url = os.environ.get("SUPABASE_STORE_URL")
+    key = os.environ.get("SUPABASE_STORE_KEY")
+    if not url or not key:
+        return 503, {"error": "database store is not configured"}
+
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=body,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "X-Store-Key": key,
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            raw = response.read().decode("utf-8")
+            return response.status, json.loads(raw or "{}")
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode("utf-8")
+        try:
+            data = json.loads(raw or "{}")
+        except Exception:
+            data = {"error": "database request failed"}
+        return exc.code, data
+    except Exception:
+        return 503, {"error": "database temporarily unavailable"}
+
+
+def require_store(payload, timeout=20):
+    status, data = store_call(payload, timeout=timeout)
+    if status >= 300:
+        return None, (jsonify(data), status)
+    return data, None
+
+
+def service_public(item):
+    return {
+        "id": item["id"],
+        "code": item["code"],
+        "name_uk": item["name_uk"],
+        "name_en": item["name_en"],
+        "price": item["price"],
+        "duration_minutes": item["duration_minutes"],
+    }
+
+
+def barber_public(item):
+    return {
+        "id": item["id"],
+        "code": item["code"],
+        "name_uk": item["name_uk"],
+        "name_en": item["name_en"],
+        "specialization": item["specialization"],
+        "active": bool(item.get("active", True)),
+    }
+
+
+def relation_object(value):
+    if isinstance(value, list):
+        return value[0] if value else {}
+    return value or {}
+
+
+def get_services():
+    status, data = store_call({"op": "services"})
+    return data if status < 300 and isinstance(data, list) else None
+
+
+def get_barbers(include_inactive=False):
+    status, data = store_call({"op": "barbers", "include_inactive": include_inactive})
+    return data if status < 300 and isinstance(data, list) else None
+
+
+def find_service(service_id):
+    rows = get_services()
+    if rows is None:
+        return None
+    return next((row for row in rows if row["id"] == service_id), None)
+
+
+def find_barber(barber_id, include_inactive=False):
+    rows = get_barbers(include_inactive=include_inactive)
+    if rows is None:
+        return None
+    return next((row for row in rows if row["id"] == barber_id), None)
+
+
+def unique_barber_code(seed, existing):
     base = re.sub(r"[^a-z0-9]+", "-", (seed or "").lower()).strip("-")[:24] or "barber"
+    used = {str(item.get("code", "")) for item in existing}
     code = base
     suffix = 2
-    while Barber.query.filter_by(code=code).first():
+    while code in used:
         code = f"{base[:20]}-{suffix}"
         suffix += 1
     return code
+
+
+def generate_slots(barber_id, day, duration):
+    status, data = store_call(
+        {"op": "day_data", "barber_id": barber_id, "date": day.isoformat()}
+    )
+    if status >= 300:
+        return None
+
+    bookings = data.get("bookings", [])
+    blocked = data.get("blocked_slots", [])
+    opening = datetime.combine(day, OPENING_TIME)
+    closing = datetime.combine(day, CLOSING_TIME)
+    cursor = opening
+    result = []
+
+    while cursor + timedelta(minutes=duration) <= closing:
+        allowed_by_time = day > local_today() or cursor.time() > local_now().time().replace(tzinfo=None)
+        free = allowed_by_time
+
+        if free:
+            for booking in bookings:
+                existing_clock = parse_time(booking.get("booking_time"))
+                if not existing_clock:
+                    continue
+                existing = combine(day, existing_clock)
+                if overlaps(cursor, duration, existing, int(booking.get("duration_minutes", 0))):
+                    free = False
+                    break
+
+        if free:
+            for slot in blocked:
+                existing_clock = parse_time(slot.get("blocked_time"))
+                if not existing_clock:
+                    continue
+                existing = combine(day, existing_clock)
+                if overlaps(cursor, duration, existing, int(slot.get("duration_minutes", 0))):
+                    free = False
+                    break
+
+        if free:
+            result.append(cursor.strftime("%H:%M"))
+
+        cursor += timedelta(minutes=BOOKING_INTERVAL_MINUTES)
+
+    return result
 
 
 @app.get("/")
@@ -335,7 +288,9 @@ def root():
         {
             "name": "BarberPoint API",
             "status": "ok",
+            "database": "Supabase PostgreSQL",
             "docs": {
+                "health": "/api/health",
                 "services": "/api/services",
                 "barbers": "/api/barbers",
                 "available_slots": "/api/available-slots?barber_id=1&service_id=1&date=2026-10-10",
@@ -346,152 +301,35 @@ def root():
 
 @app.get("/api/health")
 def health():
-    try:
-        db.session.execute(text("SELECT 1"))
-        return jsonify(
-            {
-                "ok": True,
-                "database": "postgresql" if database_url.startswith("postgresql+") else "sqlite",
-                "services": Service.query.count(),
-                "barbers": Barber.query.filter_by(active=True).count(),
-            }
-        )
-    except Exception:
-        db.session.rollback()
+    status, data = store_call({"op": "health"})
+    if status >= 300:
         return jsonify({"ok": False, "database": "unavailable"}), 503
+
+    return jsonify(
+        {
+            "ok": True,
+            "database": "postgresql",
+            "provider": "supabase",
+            "services": data.get("services", 0),
+            "barbers": data.get("barbers", 0),
+        }
+    )
 
 
 @app.get("/api/services")
 def services():
-    return jsonify([serialize_service(item) for item in Service.query.order_by(Service.id).all()])
+    data, error = require_store({"op": "services"})
+    if error:
+        return error
+    return jsonify([service_public(item) for item in data])
 
 
 @app.get("/api/barbers")
 def barbers():
-    return jsonify(
-        [serialize_barber(item) for item in Barber.query.filter_by(active=True).order_by(Barber.id).all()]
-    )
-
-
-@app.get("/api/internal/migration-export")
-def migration_export():
-    configured = os.environ.get("MIGRATION_EXPORT_TOKEN")
-    supplied = request.args.get("token", "")
-    if not configured or not supplied or not hmac.compare_digest(str(supplied), str(configured)):
-        return jsonify({"error": "not found"}), 404
-
-    services = [serialize_service(item) for item in Service.query.order_by(Service.id).all()]
-    barbers = [serialize_barber(item) for item in Barber.query.order_by(Barber.id).all()]
-    bookings = []
-    for booking in Booking.query.order_by(Booking.id).all():
-        bookings.append({
-            "id": booking.id,
-            "client_name": booking.client_name,
-            "phone": booking.phone,
-            "service_id": booking.service_id,
-            "barber_id": booking.barber_id,
-            "booking_date": booking.booking_date.isoformat(),
-            "booking_time": booking.booking_time.strftime("%H:%M:%S"),
-            "duration_minutes": booking.duration_minutes,
-            "status": booking.status,
-            "created_at": booking.created_at.isoformat(),
-        })
-    blocked_slots = []
-    for slot in BlockedSlot.query.order_by(BlockedSlot.id).all():
-        blocked_slots.append({
-            "id": slot.id,
-            "barber_id": slot.barber_id,
-            "blocked_date": slot.blocked_date.isoformat(),
-            "blocked_time": slot.blocked_time.strftime("%H:%M:%S"),
-            "duration_minutes": slot.duration_minutes,
-            "reason": slot.reason,
-        })
-
-    return jsonify({
-        "services": services,
-        "barbers": barbers,
-        "bookings": bookings,
-        "blocked_slots": blocked_slots,
-    })
-
-
-@app.get("/api/admin/barbers")
-def admin_barbers():
-    if not admin_authorized():
-        return jsonify({"error": "unauthorized"}), 401
-
-    return jsonify([serialize_barber(item) for item in Barber.query.order_by(Barber.id).all()])
-
-
-@app.post("/api/admin/barbers")
-def admin_create_barber():
-    if not admin_authorized():
-        return jsonify({"error": "unauthorized"}), 401
-
-    payload = request.get_json(silent=True) or {}
-    name_uk = str(payload.get("name_uk", "")).strip()
-    name_en = str(payload.get("name_en", "")).strip()
-    specialization = str(payload.get("specialization", "")).strip()
-
-    if not (2 <= len(name_uk) <= 80):
-        return jsonify({"error": "invalid Ukrainian name"}), 400
-    if not (2 <= len(name_en) <= 80):
-        return jsonify({"error": "invalid English name"}), 400
-    if not (2 <= len(specialization) <= 160):
-        return jsonify({"error": "invalid specialization"}), 400
-
-    barber = Barber(
-        code=unique_barber_code(name_en),
-        name_uk=name_uk,
-        name_en=name_en,
-        specialization=specialization,
-        active=True,
-    )
-    db.session.add(barber)
-    db.session.commit()
-
-    return jsonify({"success": True, "barber": serialize_barber(barber)}), 201
-
-
-@app.get("/api/admin/calendar")
-def admin_calendar():
-    if not admin_authorized():
-        return jsonify({"error": "unauthorized"}), 401
-
-    month = str(request.args.get("month", "")).strip()
-    if not re.fullmatch(r"\d{4}-\d{2}", month):
-        return jsonify({"error": "month must be YYYY-MM"}), 400
-
-    try:
-        first = datetime.strptime(month + "-01", "%Y-%m-%d").date()
-    except ValueError:
-        return jsonify({"error": "invalid month"}), 400
-
-    next_month = (first.replace(day=28) + timedelta(days=4)).replace(day=1)
-    query = Booking.query.filter(
-        Booking.booking_date >= first,
-        Booking.booking_date < next_month,
-    )
-
-    raw_barber = request.args.get("barber_id")
-    if raw_barber:
-        barber_id = request.args.get("barber_id", type=int)
-        if not barber_id:
-            return jsonify({"error": "invalid barber_id"}), 400
-        query = query.filter(Booking.barber_id == barber_id)
-
-    days = {}
-    for booking in query.limit(500).all():
-        key = booking.booking_date.isoformat()
-        item = days.setdefault(
-            key,
-            {"date": key, "total": 0, "confirmed": 0, "completed": 0, "cancelled": 0},
-        )
-        item["total"] += 1
-        if booking.status in item:
-            item[booking.status] += 1
-
-    return jsonify({"month": month, "days": [days[key] for key in sorted(days)]})
+    data, error = require_store({"op": "barbers"})
+    if error:
+        return error
+    return jsonify([barber_public(item) for item in data])
 
 
 @app.get("/api/available-slots")
@@ -502,23 +340,26 @@ def available_slots():
 
     if not barber_id or not service_id or not day:
         return jsonify({"error": "barber_id, service_id and date are required"}), 400
-
     if day < local_today():
         return jsonify({"error": "date is in the past"}), 400
     if day > local_today() + timedelta(days=MAX_BOOKING_DAYS):
         return jsonify({"error": "date is too far in the future"}), 400
 
-    barber = db.session.get(Barber, barber_id)
-    service = db.session.get(Service, service_id)
-    if not barber or not barber.active or not service:
+    service = find_service(service_id)
+    barber = find_barber(barber_id)
+    if not service or not barber or not barber.get("active", True):
         return jsonify({"error": "invalid barber or service"}), 404
+
+    slots = generate_slots(barber_id, day, int(service["duration_minutes"]))
+    if slots is None:
+        return jsonify({"error": "database temporarily unavailable"}), 503
 
     return jsonify(
         {
             "barber_id": barber_id,
             "service_id": service_id,
             "date": day.isoformat(),
-            "slots": generate_slots(barber_id, day, service.duration_minutes),
+            "slots": slots,
         }
     )
 
@@ -545,50 +386,46 @@ def create_booking():
     if day > local_today() + timedelta(days=MAX_BOOKING_DAYS):
         return jsonify({"error": "date is too far in the future"}), 400
 
-    barber = db.session.get(Barber, barber_id)
-    service = db.session.get(Service, service_id)
-    if not barber or not barber.active or not service:
+    service = find_service(service_id)
+    barber = find_barber(barber_id)
+    if not service or not barber or not barber.get("active", True):
         return jsonify({"error": "invalid barber or service"}), 404
 
-    if database_url.startswith("postgresql+"):
-        lock_key = f"barberpoint:{barber_id}:{day.isoformat()}"
-        db.session.execute(
-            text("SELECT pg_advisory_xact_lock(hashtext(:lock_key))"),
-            {"lock_key": lock_key},
-        )
-
     requested_time = clock.strftime("%H:%M")
-    if requested_time not in generate_slots(barber_id, day, service.duration_minutes):
-        db.session.rollback()
+    slots = generate_slots(barber_id, day, int(service["duration_minutes"]))
+    if slots is None:
+        return jsonify({"error": "database temporarily unavailable"}), 503
+    if requested_time not in slots:
         return jsonify({"error": "slot is not available"}), 409
 
-    booking = Booking(
-        client_name=client_name,
-        phone=phone,
-        service_id=service.id,
-        barber_id=barber.id,
-        booking_date=day,
-        booking_time=clock,
-        duration_minutes=service.duration_minutes,
-        status="confirmed",
+    status, booking = store_call(
+        {
+            "op": "create_booking",
+            "client_name": client_name,
+            "phone": phone,
+            "service_id": service_id,
+            "barber_id": barber_id,
+            "booking_date": day.isoformat(),
+            "booking_time": requested_time,
+        }
     )
 
-    db.session.add(booking)
-    db.session.commit()
+    if status >= 300:
+        return jsonify(booking), status
 
     return (
         jsonify(
             {
                 "success": True,
                 "booking": {
-                    "id": booking.id,
-                    "name": booking.client_name,
-                    "phone": booking.phone,
-                    "service": serialize_service(service),
-                    "barber": serialize_barber(barber),
-                    "date": booking.booking_date.isoformat(),
-                    "time": booking.booking_time.strftime("%H:%M"),
-                    "status": booking.status,
+                    "id": booking["id"],
+                    "name": booking["client_name"],
+                    "phone": booking["phone"],
+                    "service": service_public(service),
+                    "barber": barber_public(barber),
+                    "date": booking["booking_date"],
+                    "time": str(booking["booking_time"])[:5],
+                    "status": booking["status"],
                 },
             }
         ),
@@ -596,54 +433,126 @@ def create_booking():
     )
 
 
+@app.get("/api/admin/barbers")
+def admin_barbers():
+    if not admin_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+
+    data, error = require_store({"op": "barbers", "include_inactive": True})
+    if error:
+        return error
+    return jsonify([barber_public(item) for item in data])
+
+
+@app.post("/api/admin/barbers")
+def admin_create_barber():
+    if not admin_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+
+    payload = request.get_json(silent=True) or {}
+    name_uk = str(payload.get("name_uk", "")).strip()
+    name_en = str(payload.get("name_en", "")).strip()
+    specialization = str(payload.get("specialization", "")).strip()
+
+    if not (2 <= len(name_uk) <= 80):
+        return jsonify({"error": "invalid Ukrainian name"}), 400
+    if not (2 <= len(name_en) <= 80):
+        return jsonify({"error": "invalid English name"}), 400
+    if not (2 <= len(specialization) <= 160):
+        return jsonify({"error": "invalid specialization"}), 400
+
+    existing = get_barbers(include_inactive=True)
+    if existing is None:
+        return jsonify({"error": "database temporarily unavailable"}), 503
+
+    code = unique_barber_code(name_en, existing)
+    status, result = store_call(
+        {
+            "op": "create_barber",
+            "code": code,
+            "name_uk": name_uk,
+            "name_en": name_en,
+            "specialization": specialization,
+        }
+    )
+    if status >= 300:
+        return jsonify(result), status
+
+    return jsonify({"success": True, "barber": barber_public(result["barber"])}), 201
+
+
+@app.get("/api/admin/calendar")
+def admin_calendar():
+    if not admin_authorized():
+        return jsonify({"error": "unauthorized"}), 401
+
+    month = str(request.args.get("month", "")).strip()
+    if not re.fullmatch(r"\d{4}-\d{2}", month):
+        return jsonify({"error": "month must be YYYY-MM"}), 400
+
+    try:
+        datetime.strptime(month + "-01", "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "invalid month"}), 400
+
+    payload = {"op": "calendar", "month": month}
+    barber_id = request.args.get("barber_id", type=int)
+    if request.args.get("barber_id"):
+        if not barber_id:
+            return jsonify({"error": "invalid barber_id"}), 400
+        payload["barber_id"] = barber_id
+
+    data, error = require_store(payload)
+    if error:
+        return error
+    return jsonify(data)
+
+
 @app.get("/api/admin/bookings")
 def admin_bookings():
     if not admin_authorized():
         return jsonify({"error": "unauthorized"}), 401
 
-    query = Booking.query
-    has_date = False
+    payload = {"op": "admin_bookings"}
 
     if request.args.get("date"):
         day = parse_date(request.args.get("date"))
         if not day:
             return jsonify({"error": "invalid date"}), 400
-        query = query.filter(Booking.booking_date == day)
-        has_date = True
+        payload["date"] = day.isoformat()
 
-    raw_barber = request.args.get("barber_id")
-    if raw_barber:
+    if request.args.get("barber_id"):
         barber_id = request.args.get("barber_id", type=int)
         if not barber_id:
             return jsonify({"error": "invalid barber_id"}), 400
-        query = query.filter(Booking.barber_id == barber_id)
+        payload["barber_id"] = barber_id
 
-    raw_time = request.args.get("time")
-    if raw_time:
-        clock = parse_time(raw_time)
+    if request.args.get("time"):
+        clock = parse_time(request.args.get("time"))
         if not clock:
             return jsonify({"error": "invalid time"}), 400
-        query = query.filter(Booking.booking_time == clock)
+        payload["time"] = clock.strftime("%H:%M:%S")
 
-    if has_date:
-        query = query.order_by(Booking.booking_time, Booking.created_at)
-    else:
-        query = query.order_by(Booking.created_at.desc())
+    data, error = require_store(payload)
+    if error:
+        return error
 
     rows = []
-    for booking in query.limit(500).all():
+    for booking in data:
+        service = relation_object(booking.get("services"))
+        barber = relation_object(booking.get("barbers"))
         rows.append(
             {
-                "id": booking.id,
-                "name": booking.client_name,
-                "phone": booking.phone,
-                "service": serialize_service(booking.service),
-                "barber": serialize_barber(booking.barber),
-                "date": booking.booking_date.isoformat(),
-                "time": booking.booking_time.strftime("%H:%M"),
-                "duration_minutes": booking.duration_minutes,
-                "status": booking.status,
-                "created_at": booking.created_at.isoformat() + "Z",
+                "id": booking["id"],
+                "name": booking["client_name"],
+                "phone": booking["phone"],
+                "service": service_public(service),
+                "barber": barber_public(barber),
+                "date": booking["booking_date"],
+                "time": str(booking["booking_time"])[:5],
+                "duration_minutes": booking["duration_minutes"],
+                "status": booking["status"],
+                "created_at": booking["created_at"],
             }
         )
 
@@ -655,18 +564,15 @@ def admin_update_booking(booking_id):
     if not admin_authorized():
         return jsonify({"error": "unauthorized"}), 401
 
-    booking = db.session.get(Booking, booking_id)
-    if not booking:
-        return jsonify({"error": "booking not found"}), 404
-
     payload = request.get_json(silent=True) or {}
-    status = payload.get("status")
-    if status not in {"confirmed", "cancelled", "completed"}:
+    status_value = payload.get("status")
+    if status_value not in {"confirmed", "cancelled", "completed"}:
         return jsonify({"error": "invalid status"}), 400
 
-    booking.status = status
-    db.session.commit()
-    return jsonify({"success": True, "id": booking.id, "status": booking.status})
+    status, data = store_call(
+        {"op": "update_booking_status", "id": booking_id, "status": status_value}
+    )
+    return jsonify(data), status
 
 
 @app.get("/api/admin/blocked-slots")
@@ -674,21 +580,40 @@ def admin_blocked_slots():
     if not admin_authorized():
         return jsonify({"error": "unauthorized"}), 401
 
-    query = BlockedSlot.query.order_by(BlockedSlot.blocked_date, BlockedSlot.blocked_time)
+    payload = {"op": "blocked_slots"}
+
     if request.args.get("date"):
         day = parse_date(request.args.get("date"))
         if not day:
             return jsonify({"error": "invalid date"}), 400
-        query = query.filter(BlockedSlot.blocked_date == day)
+        payload["date"] = day.isoformat()
 
-    raw_barber = request.args.get("barber_id")
-    if raw_barber:
+    if request.args.get("barber_id"):
         barber_id = request.args.get("barber_id", type=int)
         if not barber_id:
             return jsonify({"error": "invalid barber_id"}), 400
-        query = query.filter(BlockedSlot.barber_id == barber_id)
+        payload["barber_id"] = barber_id
 
-    return jsonify([serialize_blocked_slot(slot) for slot in query.all()])
+    data, error = require_store(payload)
+    if error:
+        return error
+
+    rows = []
+    for slot in data:
+        barber = relation_object(slot.get("barbers"))
+        rows.append(
+            {
+                "id": slot["id"],
+                "barber_id": slot["barber_id"],
+                "barber": barber_public(barber),
+                "date": slot["blocked_date"],
+                "time": str(slot["blocked_time"])[:5],
+                "duration_minutes": slot["duration_minutes"],
+                "reason": slot.get("reason"),
+            }
+        )
+
+    return jsonify(rows)
 
 
 @app.delete("/api/admin/blocked-slots/<int:slot_id>")
@@ -696,13 +621,8 @@ def admin_delete_blocked_slot(slot_id):
     if not admin_authorized():
         return jsonify({"error": "unauthorized"}), 401
 
-    slot = db.session.get(BlockedSlot, slot_id)
-    if not slot:
-        return jsonify({"error": "blocked slot not found"}), 404
-
-    db.session.delete(slot)
-    db.session.commit()
-    return jsonify({"success": True, "id": slot_id})
+    status, data = store_call({"op": "delete_blocked_slot", "id": slot_id})
+    return jsonify(data), status
 
 
 @app.post("/api/admin/blocked-slots")
@@ -725,123 +645,22 @@ def admin_block_slot():
     if not isinstance(duration, int) or duration < 15 or duration > 720:
         return jsonify({"error": "invalid duration"}), 400
 
-    barber = db.session.get(Barber, barber_id)
+    barber = find_barber(barber_id, include_inactive=True)
     if not barber:
         return jsonify({"error": "barber not found"}), 404
 
-    slot = BlockedSlot(
-        barber_id=barber_id,
-        blocked_date=day,
-        blocked_time=clock,
-        duration_minutes=duration,
-        reason=str(payload.get("reason", "")).strip() or None,
-    )
-
-    db.session.add(slot)
-    try:
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        return jsonify({"error": "slot already blocked"}), 409
-
-    return jsonify({"success": True, "id": slot.id}), 201
-
-
-def supabase_store_call(payload, timeout=30):
-    url = os.environ.get("SUPABASE_STORE_URL")
-    key = os.environ.get("SUPABASE_STORE_KEY")
-    if not url or not key:
-        raise RuntimeError("Supabase store is not configured")
-
-    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=body,
-        method="POST",
-        headers={
-            "Content-Type": "application/json",
-            "X-Store-Key": key,
-        },
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
-            data = response.read().decode("utf-8")
-            return response.status, json.loads(data or "{}")
-    except urllib.error.HTTPError as exc:
-        data = exc.read().decode("utf-8")
-        try:
-            payload = json.loads(data or "{}")
-        except Exception:
-            payload = {"error": "store request failed"}
-        return exc.code, payload
-
-
-def migrate_render_to_supabase():
-    services = [serialize_service(item) for item in Service.query.order_by(Service.id).all()]
-    barbers = [serialize_barber(item) for item in Barber.query.order_by(Barber.id).all()]
-
-    bookings = []
-    for booking in Booking.query.order_by(Booking.id).all():
-        bookings.append({
-            "id": booking.id,
-            "client_name": booking.client_name,
-            "phone": booking.phone,
-            "service_id": booking.service_id,
-            "barber_id": booking.barber_id,
-            "booking_date": booking.booking_date.isoformat(),
-            "booking_time": booking.booking_time.strftime("%H:%M:%S"),
-            "duration_minutes": booking.duration_minutes,
-            "status": booking.status,
-            "created_at": booking.created_at.isoformat(),
-        })
-
-    blocked_slots = []
-    for slot in BlockedSlot.query.order_by(BlockedSlot.id).all():
-        blocked_slots.append({
-            "id": slot.id,
-            "barber_id": slot.barber_id,
-            "blocked_date": slot.blocked_date.isoformat(),
-            "blocked_time": slot.blocked_time.strftime("%H:%M:%S"),
-            "duration_minutes": slot.duration_minutes,
-            "reason": slot.reason,
-        })
-
-    status, result = supabase_store_call(
+    status, data = store_call(
         {
-            "op": "bulk_import",
-            "services": services,
-            "barbers": barbers,
-            "bookings": bookings,
-            "blocked_slots": blocked_slots,
-        },
-        timeout=60,
+            "op": "create_blocked_slot",
+            "barber_id": barber_id,
+            "blocked_date": day.isoformat(),
+            "blocked_time": clock.strftime("%H:%M:%S"),
+            "duration_minutes": duration,
+            "reason": str(payload.get("reason", "")).strip() or None,
+        }
     )
-    if status >= 300:
-        raise RuntimeError(f"Supabase migration failed with HTTP {status}")
-
-    counts = result.get("counts", {})
-    print(
-        "Supabase migration complete: "
-        f"{counts.get('services', 0)} services, "
-        f"{counts.get('barbers', 0)} barbers, "
-        f"{counts.get('bookings', 0)} bookings, "
-        f"{counts.get('blocked_slots', 0)} blocked slots"
-    )
-
-
-with app.app_context():
-    db.create_all()
-    seed_data()
-
-    if os.environ.get("MIGRATE_TO_SUPABASE") == "1":
-        migrate_render_to_supabase()
-
-    print(
-        f"BarberPoint database ready: {Service.query.count()} services, "
-        f"{Barber.query.filter_by(active=True).count()} active barbers"
-    )
+    return jsonify(data), status
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=False)
