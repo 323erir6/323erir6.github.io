@@ -19,3 +19,32 @@
 @media(max-width:1050px){.overview-grid{grid-template-columns:1fr}.overview-side{grid-template-columns:1fr 1fr}.overview-side .stats{grid-template-columns:1fr 1fr}.barber-form{grid-template-columns:1fr 1fr}.barber-specialization{grid-column:1/-1}.barber-list{grid-template-columns:1fr}}
 @media(max-width:720px){.head-actions{align-items:flex-end;flex-direction:column}.overview-side{grid-template-columns:1fr}.calendar-title{display:grid}.calendar-controls{justify-content:space-between}.admin-calendar-day,.calendar-blank{min-height:60px}.day-count{top:7px;right:7px}.calendar-legend{gap:10px}.barber-form{grid-template-columns:1fr}.barber-specialization{grid-column:auto}.barber-admin-card{grid-template-columns:44px 1fr}.barber-state{grid-column:2;grid-row:auto;width:max-content}.barber-admin-card p{grid-column:2}.live-note{display:none}}
 @media(max-width:480px){.calendar-panel{padding:16px}.calendar-weekdays,.admin-calendar{gap:5px}.admin-calendar-day,.calendar-blank{min-height:52px}.admin-calendar-day{padding:8px;border-radius:12px}.day-count{min-width:18px;height:18px;font-size:9px}.day-dot{left:8px;bottom:7px}.calendar-title h2{font-size:24px}.overview-side .stats{grid-template-columns:1fr 1fr}}
+
+/* custom-scrollbar */
+html{
+  scrollbar-width:thin;
+  scrollbar-color:#473431 #090c0e;
+}
+::-webkit-scrollbar{
+  width:9px;
+  height:9px;
+}
+::-webkit-scrollbar-track{
+  background:#090c0e;
+}
+::-webkit-scrollbar-thumb{
+  background:#473431;
+  border:2px solid #090c0e;
+  border-radius:999px;
+}
+::-webkit-scrollbar-thumb:hover{
+  background:#ff573b;
+}
+::-webkit-scrollbar-corner{
+  background:#090c0e;
+}
+::-webkit-scrollbar-button{
+  width:0;
+  height:0;
+  display:none;
+}
