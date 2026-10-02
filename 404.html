@@ -1,32 +1,357 @@
 <!doctype html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex" />
-  <meta name="theme-color" content="#090909" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#090909">
   <title>404 — OneOne</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <style>
-    :root{--bg:#090909;--text:#f4f2ed;--muted:#9d9b95;--line:#2c2c2c;--accent:#d9ff3f}
-    /* custom-scrollbar */
-    html{scrollbar-width:thin;scrollbar-color:#3c4130 #090909}
-    ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-track{background:#090909}::-webkit-scrollbar-thumb{background:#3c4130;border:2px solid #090909;border-radius:999px}::-webkit-scrollbar-thumb:hover{background:#d9ff3f}::-webkit-scrollbar-corner{background:#090909}::-webkit-scrollbar-button{width:0;height:0;display:none}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 44%,#12150f 0,#090909 35%,#070707 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:grid;place-items:center;padding:28px;overflow:hidden}
-    .wrap{width:min(920px,100%);text-align:center;position:relative;z-index:1}.orbit{width:min(330px,78vw);aspect-ratio:1;margin:0 auto 36px;position:relative;display:grid;place-items:center}.ring{position:absolute;border:1px solid #343434;border-radius:50%;inset:0}.ring.small{inset:20%;border-style:dashed;opacity:.8}.dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--accent);left:20%;bottom:11%;box-shadow:0 0 20px rgba(217,255,63,.45)}.code{font:800 31px/1.02 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.09em;text-align:center}.glow{position:absolute;width:120px;height:120px;border-radius:50%;background:var(--accent);filter:blur(42px);opacity:.12}
-    .kicker{font-size:11px;font-weight:800;letter-spacing:.2em;color:var(--muted);margin:0 0 14px}.num{font-size:clamp(82px,15vw,150px);line-height:.78;letter-spacing:-.08em;margin:0;font-weight:900}.text{font-size:clamp(20px,4vw,34px);font-weight:800;margin:30px 0 10px}.sub{color:var(--muted);margin:0 auto 28px;max-width:560px}.btn{display:inline-flex;min-height:50px;align-items:center;justify-content:center;padding:0 22px;border-radius:999px;background:var(--accent);color:#090909;font-weight:800;text-decoration:none;transition:transform .2s ease}.btn:hover{transform:translateY(-2px)}
+    :root{
+      --bg:#090909;
+      --panel:#10110f;
+      --text:#f4f2ed;
+      --muted:#9d9b95;
+      --line:#2c2c2c;
+      --accent:#d9ff3f;
+    }
+
+    *{box-sizing:border-box}
+
+    html{
+      min-height:100%;
+      scroll-behavior:smooth;
+      scrollbar-width:thin;
+      scrollbar-color:#3c4130 #090909;
+    }
+
+    body{
+      margin:0;
+      min-width:280px;
+      min-height:100vh;
+      min-height:100svh;
+      overflow-x:hidden;
+      overflow-y:auto;
+      background:
+        radial-gradient(circle at 50% 30%,rgba(217,255,63,.055),transparent 30rem),
+        radial-gradient(circle at 50% 52%,#10120d 0,#090909 39%,#070707 100%);
+      color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.022;
+      z-index:20;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.75'/%3E%3C/svg%3E");
+    }
+
+    ::selection{background:var(--accent);color:#090909}
+
+    ::-webkit-scrollbar{width:9px;height:9px}
+    ::-webkit-scrollbar-track{background:#090909}
+    ::-webkit-scrollbar-thumb{background:#3c4130;border:2px solid #090909;border-radius:999px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+    ::-webkit-scrollbar-corner{background:#090909}
+    ::-webkit-scrollbar-button{width:0;height:0;display:none}
+
+    .page{
+      width:min(1120px,calc(100% - 40px));
+      min-height:100vh;
+      min-height:100svh;
+      margin-inline:auto;
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+      padding:
+        max(20px,env(safe-area-inset-top))
+        0
+        max(20px,env(safe-area-inset-bottom));
+      position:relative;
+      z-index:1;
+    }
+
+    .topbar{
+      min-height:58px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+    }
+
+    .brand{
+      color:var(--text);
+      text-decoration:none;
+      font-weight:900;
+      font-size:18px;
+      letter-spacing:-.045em;
+    }
+
+    .brand span{color:var(--accent)}
+
+    .back-link{
+      color:var(--muted);
+      text-decoration:none;
+      font-size:12px;
+      font-weight:750;
+      letter-spacing:.03em;
+      transition:color .18s ease;
+    }
+
+    .back-link:hover{color:var(--text)}
+
+    .content{
+      min-height:0;
+      display:grid;
+      grid-template-columns:minmax(250px,.82fr) minmax(0,1.18fr);
+      align-items:center;
+      gap:clamp(34px,7vw,96px);
+      padding:clamp(26px,5vh,64px) 0;
+    }
+
+    .visual{
+      display:grid;
+      place-items:center;
+    }
+
+    .orbit{
+      width:clamp(210px,30vw,360px);
+      aspect-ratio:1;
+      position:relative;
+      display:grid;
+      place-items:center;
+      isolation:isolate;
+    }
+
+    .ring{
+      position:absolute;
+      inset:0;
+      border:1px solid #343434;
+      border-radius:50%;
+      animation:spin 24s linear infinite;
+    }
+
+    .ring::after{
+      content:"";
+      position:absolute;
+      width:7px;
+      height:7px;
+      left:20%;
+      bottom:10%;
+      border-radius:50%;
+      background:var(--accent);
+      box-shadow:0 0 20px rgba(217,255,63,.45);
+    }
+
+    .ring.small{
+      inset:20%;
+      border-style:dashed;
+      opacity:.72;
+      animation:spinReverse 18s linear infinite;
+    }
+
+    .ring.small::after{display:none}
+
+    .glow{
+      position:absolute;
+      width:42%;
+      aspect-ratio:1;
+      border-radius:50%;
+      background:var(--accent);
+      filter:blur(44px);
+      opacity:.10;
+      z-index:-1;
+    }
+
+    .mark{
+      font:900 clamp(62px,9vw,96px)/1 ui-sans-serif,system-ui,sans-serif;
+      letter-spacing:-.08em;
+      color:#f4f2ed;
+      transform:translateX(-.04em);
+    }
+
+    .copy{
+      max-width:680px;
+    }
+
+    .kicker{
+      margin:0 0 16px;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:850;
+      letter-spacing:.19em;
+      text-transform:uppercase;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(88px,14vw,178px);
+      line-height:.72;
+      letter-spacing:-.085em;
+      font-weight:950;
+    }
+
+    .title{
+      margin:clamp(28px,4vh,46px) 0 12px;
+      font-size:clamp(28px,4.2vw,52px);
+      line-height:1;
+      letter-spacing:-.055em;
+      font-weight:880;
+    }
+
+    .sub{
+      margin:0;
+      max-width:590px;
+      color:var(--muted);
+      font-size:clamp(14px,1.5vw,17px);
+      line-height:1.65;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:11px;
+      margin-top:28px;
+    }
+
+    .btn{
+      min-height:50px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 21px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      color:var(--text);
+      text-decoration:none;
+      font-size:13px;
+      font-weight:850;
+      transition:transform .18s ease,background .18s ease,border-color .18s ease;
+    }
+
+    .btn:hover{transform:translateY(-2px)}
+
+    .btn.primary{
+      background:var(--accent);
+      color:#090909;
+      border-color:var(--accent);
+    }
+
+    .btn.secondary:hover{
+      background:#121212;
+      border-color:#444;
+    }
+
+    .footer{
+      min-height:52px;
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:20px;
+      padding-top:10px;
+      color:#696965;
+      font-size:10px;
+      letter-spacing:.11em;
+      text-transform:uppercase;
+    }
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinReverse{to{transform:rotate(-360deg)}}
+
+    @media(max-width:760px){
+      .page{width:min(100% - 28px,1120px)}
+      .content{
+        grid-template-columns:1fr;
+        text-align:center;
+        gap:22px;
+        padding:24px 0 34px;
+      }
+      .copy{margin-inline:auto}
+      .orbit{width:clamp(190px,57vw,290px)}
+      .actions{justify-content:center}
+      .sub{margin-inline:auto}
+      .footer{justify-content:center;text-align:center}
+      .footer span:last-child{display:none}
+    }
+
+    @media(max-height:760px) and (min-width:761px){
+      .page{padding-top:10px;padding-bottom:10px}
+      .topbar{min-height:46px}
+      .content{
+        padding:12px 0 18px;
+        gap:clamp(28px,5vw,70px);
+      }
+      .orbit{width:clamp(190px,25vw,285px)}
+      h1{font-size:clamp(76px,12vw,132px)}
+      .title{margin-top:22px}
+      .actions{margin-top:20px}
+      .footer{min-height:34px}
+    }
+
+    @media(max-height:620px) and (min-width:761px){
+      .orbit{width:210px}
+      h1{font-size:92px}
+      .title{font-size:31px;margin-top:18px}
+      .sub{font-size:13px}
+      .btn{min-height:44px}
+    }
+
+    @media(max-width:420px){
+      .topbar{min-height:52px}
+      .back-link{font-size:11px}
+      .content{padding-top:16px}
+      .orbit{width:min(68vw,250px)}
+      h1{font-size:clamp(82px,28vw,122px)}
+      .title{font-size:clamp(27px,9vw,38px)}
+      .actions{display:grid}
+      .btn{width:100%}
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      .ring,.ring.small{animation:none}
+      .btn{transition:none}
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <div class="orbit" aria-hidden="true"><div class="ring"></div><div class="ring small"></div><div class="glow"></div><div class="dot"></div><div class="code">01<br>ONE<br>ONE</div></div>
-    <p class="kicker">ONEONE / 404</p>
-    <h1 class="num">404</h1>
-    <p class="text">Сторінку не знайдено.</p>
-    <p class="sub">Посилання могло змінитися або сторінки більше не існує. Повернись до портфоліо.</p>
-    <a class="btn" href="/">На головну</a>
+  <main class="page">
+    <header class="topbar">
+      <a class="brand" href="/">One<span>One</span></a>
+      <a class="back-link" href="/">← Повернутися до портфоліо</a>
+    </header>
+
+    <section class="content">
+      <div class="visual" aria-hidden="true">
+        <div class="orbit">
+          <div class="ring"></div>
+          <div class="ring small"></div>
+          <div class="glow"></div>
+          <div class="mark">1</div>
+        </div>
+      </div>
+
+      <div class="copy">
+        <p class="kicker">OneOne / Error 404</p>
+        <h1>404</h1>
+        <p class="title">Сторінку не знайдено.</p>
+        <p class="sub">Посилання могло змінитися, бути введене неправильно або сторінки більше не існує. Повернись до портфоліо або відкрий головну сторінку.</p>
+        <div class="actions">
+          <a class="btn primary" href="/">На головну</a>
+          <a class="btn secondary" href="/#work">До проєктів</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>OneOne / Web Development</span>
+      <span>404 / Page not found</span>
+    </footer>
   </main>
 </body>
 </html>
