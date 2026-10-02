@@ -1,0 +1,30 @@
+name: BarberPoint availability check
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check BarberPoint and Supabase
+        env:
+          API: https://barberpoint-api-oneone.onrender.com
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 10 --retry-delay 12 "$API/api/health" > health.json
+          cat health.json
+          python - <<'PY'
+          import json
+          data=json.load(open("health.json"))
+          assert data.get("ok") is True, data
+          assert data.get("database") == "postgresql", data
+          assert data.get("provider") == "supabase", data
+          assert data.get("services", 0) >= 4, data
+          assert data.get("barbers", 0) >= 3, data
+          PY
