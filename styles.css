@@ -119,3 +119,32 @@ h3 { font-size: 28px; margin: 6px 0 10px; letter-spacing: -.035em; }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* custom-scrollbar */
+html{
+  scrollbar-width:thin;
+  scrollbar-color:#3c4130 #090909;
+}
+::-webkit-scrollbar{
+  width:9px;
+  height:9px;
+}
+::-webkit-scrollbar-track{
+  background:#090909;
+}
+::-webkit-scrollbar-thumb{
+  background:#3c4130;
+  border:2px solid #090909;
+  border-radius:999px;
+}
+::-webkit-scrollbar-thumb:hover{
+  background:#d9ff3f;
+}
+::-webkit-scrollbar-corner{
+  background:#090909;
+}
+::-webkit-scrollbar-button{
+  width:0;
+  height:0;
+  display:none;
+}
