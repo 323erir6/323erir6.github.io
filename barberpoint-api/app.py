@@ -1,7 +1,10 @@
 import hmac
+import json
 import os
 import re
 import time as time_module
+import urllib.error
+import urllib.request
 from collections import defaultdict, deque
 from datetime import date, datetime, time, timedelta
 from threading import Lock
@@ -744,9 +747,96 @@ def admin_block_slot():
     return jsonify({"success": True, "id": slot.id}), 201
 
 
+def supabase_store_call(payload, timeout=30):
+    url = os.environ.get("SUPABASE_STORE_URL")
+    key = os.environ.get("SUPABASE_STORE_KEY")
+    if not url or not key:
+        raise RuntimeError("Supabase store is not configured")
+
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=body,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "X-Store-Key": key,
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            data = response.read().decode("utf-8")
+            return response.status, json.loads(data or "{}")
+    except urllib.error.HTTPError as exc:
+        data = exc.read().decode("utf-8")
+        try:
+            payload = json.loads(data or "{}")
+        except Exception:
+            payload = {"error": "store request failed"}
+        return exc.code, payload
+
+
+def migrate_render_to_supabase():
+    services = [serialize_service(item) for item in Service.query.order_by(Service.id).all()]
+    barbers = [serialize_barber(item) for item in Barber.query.order_by(Barber.id).all()]
+
+    bookings = []
+    for booking in Booking.query.order_by(Booking.id).all():
+        bookings.append({
+            "id": booking.id,
+            "client_name": booking.client_name,
+            "phone": booking.phone,
+            "service_id": booking.service_id,
+            "barber_id": booking.barber_id,
+            "booking_date": booking.booking_date.isoformat(),
+            "booking_time": booking.booking_time.strftime("%H:%M:%S"),
+            "duration_minutes": booking.duration_minutes,
+            "status": booking.status,
+            "created_at": booking.created_at.isoformat(),
+        })
+
+    blocked_slots = []
+    for slot in BlockedSlot.query.order_by(BlockedSlot.id).all():
+        blocked_slots.append({
+            "id": slot.id,
+            "barber_id": slot.barber_id,
+            "blocked_date": slot.blocked_date.isoformat(),
+            "blocked_time": slot.blocked_time.strftime("%H:%M:%S"),
+            "duration_minutes": slot.duration_minutes,
+            "reason": slot.reason,
+        })
+
+    status, result = supabase_store_call(
+        {
+            "op": "bulk_import",
+            "services": services,
+            "barbers": barbers,
+            "bookings": bookings,
+            "blocked_slots": blocked_slots,
+        },
+        timeout=60,
+    )
+    if status >= 300:
+        raise RuntimeError(f"Supabase migration failed with HTTP {status}")
+
+    counts = result.get("counts", {})
+    print(
+        "Supabase migration complete: "
+        f"{counts.get('services', 0)} services, "
+        f"{counts.get('barbers', 0)} barbers, "
+        f"{counts.get('bookings', 0)} bookings, "
+        f"{counts.get('blocked_slots', 0)} blocked slots"
+    )
+
+
 with app.app_context():
     db.create_all()
     seed_data()
+
+    if os.environ.get("MIGRATE_TO_SUPABASE") == "1":
+        migrate_render_to_supabase()
+
     print(
         f"BarberPoint database ready: {Service.query.count()} services, "
         f"{Barber.query.filter_by(active=True).count()} active barbers"
