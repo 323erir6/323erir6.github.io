@@ -65,6 +65,20 @@ jobs:
           test "$STATUS" = "409"
           cat invalid-booking.json
 
+          curl --fail --silent --show-error "$API/api/reviews" > reviews.json
+          python - <<'PY'
+          import json
+          data=json.load(open("reviews.json"))
+          assert isinstance(data, list), data
+          PY
+
+          STATUS="$(curl --silent --show-error -o invalid-review.json -w '%{http_code}' \
+            -H 'Content-Type: application/json' \
+            -d '{"phone":"123","rating":5,"text":"test"}' \
+            "$API/api/reviews")"
+          test "$STATUS" = "400"
+          cat invalid-review.json
+
       - name: Verify admin protection
         env:
           API: https://barberpoint-api-oneone.onrender.com
