@@ -101,13 +101,21 @@ function createDatePicker(root){
   document.addEventListener('click',e=>{if(!root.contains(e.target))close();});
   root.addEventListener('click',e=>e.stopPropagation());
   render();
-  return{getValue:()=>input.value,getDisplay:()=>format(),refresh:render};
+  function clear(){
+    selected=null;
+    input.value='';
+    view=new Date(today.getFullYear(),today.getMonth(),1);
+    close();
+    render();
+  }
+  return{getValue:()=>input.value,getDisplay:()=>format(),refresh:render,clear};
 }
 const datePicker=createDatePicker(document.querySelector('[data-date-picker]'));
 
 function setLang(lang){
   document.documentElement.lang=lang;
   trans.forEach(el=>el.textContent=el.dataset[lang]);
+  document.querySelectorAll('[data-uk-placeholder][data-en-placeholder]').forEach(el=>{el.placeholder=el.dataset[lang+'Placeholder'];});
   switcher.textContent=lang==='uk'?'EN':'UA';
   safeStorageSet('barber-language',lang);
   datePicker.refresh();
@@ -272,6 +280,25 @@ const clientName=document.getElementById('clientName');
 const clientPhone=document.getElementById('clientPhone');
 [clientName,clientPhone].forEach(input=>input.addEventListener('input',()=>clearFieldError(input)));
 
+
+function resetBookingForm(){
+  bookingForm.reset();
+  state.service='';
+  state.serviceId=null;
+  state.barber='';
+  state.barberId=null;
+  state.time='';
+  datePicker.clear();
+  serviceChoices.querySelectorAll('button').forEach(btn=>btn.classList.remove('selected'));
+  barberChoices.querySelectorAll('button').forEach(btn=>btn.classList.remove('selected'));
+  timeChoices.querySelectorAll('button').forEach(btn=>btn.classList.remove('selected'));
+  clearFieldError(clientName);
+  clearFieldError(clientPhone);
+  step=1;
+  render('back');
+  loadSlots();
+}
+
 const orderModal=document.getElementById('orderModal');
 const orderSummary=document.getElementById('orderSummary');
 let modalReturnFocus=null;
@@ -326,9 +353,9 @@ bookingForm.addEventListener('submit',async e=>{
       ['Час','Time',booking.time]
     ];
 
-    message('Запис збережено на сервері.','Booking saved on the server.','success');
+    resetBookingForm();
+    message('Запис збережено. Форму очищено, щоб уникнути повторного запису.','Booking saved. The form was cleared to prevent an accidental duplicate.','success');
     openModal(rows);
-    await loadSlots();
   }catch(error){
     if(error.status===409){
       message('Цей час щойно зайняли. Оберіть інший.','That time was just booked. Choose another one.');
@@ -342,11 +369,137 @@ bookingForm.addEventListener('submit',async e=>{
   }
 });
 
+
+const reviewForm=document.getElementById('reviewForm');
+const reviewPhone=document.getElementById('reviewPhone');
+const reviewText=document.getElementById('reviewText');
+const reviewSubmit=document.getElementById('reviewSubmit');
+const reviewStatus=document.getElementById('reviewStatus');
+const reviewRating=document.getElementById('reviewRating');
+const reviewsList=document.getElementById('reviewsList');
+let reviewRatingValue=0;
+let reviewsCache=[];
+
+function setReviewStatus(uk,en,type='error'){
+  if(!reviewStatus)return;
+  reviewStatus.className='status review-status '+type;
+  reviewStatus.textContent=currentLang()==='uk'?uk:en;
+}
+
+function clearReviewStatus(){
+  if(!reviewStatus)return;
+  reviewStatus.className='status review-status';
+  reviewStatus.textContent='';
+}
+
+function setReviewRating(value){
+  reviewRatingValue=value;
+  reviewRating?.querySelectorAll('button[data-rating]').forEach(btn=>{
+    const active=Number(btn.dataset.rating)<=value;
+    btn.classList.toggle('active',active);
+    btn.setAttribute('aria-checked',Number(btn.dataset.rating)===value?'true':'false');
+  });
+}
+
+function reviewDate(value){
+  if(!value)return '';
+  const raw=String(value);
+  const d=new Date(/[zZ]|[+-]\d\d:\d\d$/.test(raw)?raw:raw+'Z');
+  if(Number.isNaN(d.getTime()))return '';
+  return new Intl.DateTimeFormat(currentLang()==='uk'?'uk-UA':'en-GB',{day:'numeric',month:'short',year:'numeric'}).format(d);
+}
+
+function renderReviews(){
+  if(!reviewsList)return;
+  if(!reviewsCache.length){
+    reviewsList.innerHTML=`<div class="reviews-empty">${currentLang()==='uk'?'Поки що немає відгуків. Після завершеного візиту перший відгук може бути вашим.':'No reviews yet. After a completed visit, the first review can be yours.'}</div>`;
+    return;
+  }
+
+  reviewsList.innerHTML=reviewsCache.map(item=>{
+    const rating=Math.max(1,Math.min(5,Number(item.rating)||1));
+    const stars='★'.repeat(rating)+'☆'.repeat(5-rating);
+    return `
+      <article class="review-card">
+        <div class="review-card-head">
+          <span class="review-author">${escapeHtml(item.client_name||'Client')}</span>
+          <time class="review-date">${escapeHtml(reviewDate(item.created_at))}</time>
+        </div>
+        <div class="review-stars" aria-label="${rating} / 5">${stars}</div>
+        <p>${escapeHtml(item.text||'')}</p>
+      </article>
+    `;
+  }).join('');
+}
+
+async function loadReviews(){
+  if(!reviewsList)return;
+  try{
+    reviewsCache=await api('/api/reviews');
+    renderReviews();
+  }catch{
+    reviewsList.innerHTML=`<div class="reviews-empty">${currentLang()==='uk'?'Не вдалося завантажити відгуки.':'Could not load reviews.'}</div>`;
+  }
+}
+
+reviewRating?.querySelectorAll('button[data-rating]').forEach(btn=>{
+  btn.setAttribute('role','radio');
+  btn.setAttribute('aria-checked','false');
+  btn.addEventListener('click',()=>{
+    setReviewRating(Number(btn.dataset.rating));
+    clearReviewStatus();
+  });
+});
+
+reviewForm?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const l=currentLang();
+  const phone=reviewPhone.value.trim();
+  const textValue=reviewText.value.trim();
+
+  if(phone.replace(/\D/g,'').length<7){
+    return setReviewStatus('Вкажіть коректний номер телефону з вашого запису.','Enter the phone number used for your booking.');
+  }
+  if(!reviewRatingValue){
+    return setReviewStatus('Оберіть оцінку від 1 до 5.','Choose a rating from 1 to 5.');
+  }
+  if(textValue.length<3){
+    return setReviewStatus('Напишіть хоча б кілька слів про візит.','Write at least a few words about your visit.');
+  }
+
+  reviewSubmit.disabled=true;
+  reviewSubmit.textContent=l==='uk'?'Перевірка запису...':'Verifying booking...';
+
+  try{
+    await api('/api/reviews',{
+      method:'POST',
+      body:JSON.stringify({phone,rating:reviewRatingValue,text:textValue})
+    });
+    reviewForm.reset();
+    setReviewRating(0);
+    setReviewStatus('Відгук опубліковано. Дякуємо!','Review published. Thank you!','success');
+    await loadReviews();
+  }catch(error){
+    if(error.status===403||error.status===409){
+      setReviewStatus('Для цього номера немає завершеного запису, за який ще можна залишити відгук.','There is no completed booking on this number that is still eligible for a review.');
+    }else if(error.status===429){
+      setReviewStatus('Забагато спроб. Спробуйте трохи пізніше.','Too many attempts. Please try again later.');
+    }else{
+      setReviewStatus('Не вдалося зберегти відгук. Спробуйте ще раз.','Could not save the review. Please try again.');
+    }
+  }finally{
+    reviewSubmit.disabled=false;
+    reviewSubmit.textContent=currentLang()==='uk'?'Опублікувати відгук':'Publish review';
+  }
+});
+
 setLang(safeStorageGet('barber-language')==='en'?'en':'uk');
 switcher.addEventListener('click',async()=>{
   setLang(currentLang()==='uk'?'en':'uk');
+  renderReviews();
   await loadSlots();
 });
 render();
 loadSlots();
 loadCatalog();
+loadReviews();
