@@ -71,3 +71,32 @@
   .steps button{min-width:0!important;width:100%;padding:14px 8px;gap:6px;font-size:11px;justify-content:flex-start}
   .steps button span{min-width:0;white-space:nowrap;font-size:10px}
 }
+
+/* custom-scrollbar */
+html{
+  scrollbar-width:thin;
+  scrollbar-color:#4c3531 #0d1012;
+}
+::-webkit-scrollbar{
+  width:9px;
+  height:9px;
+}
+::-webkit-scrollbar-track{
+  background:#0d1012;
+}
+::-webkit-scrollbar-thumb{
+  background:#4c3531;
+  border:2px solid #0d1012;
+  border-radius:999px;
+}
+::-webkit-scrollbar-thumb:hover{
+  background:#ff5a36;
+}
+::-webkit-scrollbar-corner{
+  background:#0d1012;
+}
+::-webkit-scrollbar-button{
+  width:0;
+  height:0;
+  display:none;
+}
