@@ -26,6 +26,7 @@ jobs:
           data=json.load(open("health.json"))
           assert data["ok"] is True, data
           assert data["database"] == "postgresql", data
+          assert data["provider"] == "supabase", data
           assert data["services"] == 4, data
           assert data["barbers"] >= 3, data
           PY
