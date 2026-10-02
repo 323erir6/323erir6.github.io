@@ -8,8 +8,8 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://images.unsplash.com data:; connect-src 'self' https://barberpoint-api-oneone.onrender.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>BarberPoint — Concept by OneOne</title>
-  <link rel="stylesheet" href="styles.css?v=20261002-scrollbar1">
-  <script src="script.js?v=20261002-5" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261002-reviews1">
+  <script src="script.js?v=20261002-reviews1" defer></script>
 
   <!-- OneOne production metadata -->
   <link rel="canonical" href="https://323erir6.github.io/barberpoint/" />
@@ -38,6 +38,7 @@
   <nav>
     <a href="#services" data-uk="Послуги" data-en="Services">Послуги</a>
     <a href="#team" data-uk="Майстри" data-en="Barbers">Майстри</a>
+    <a href="#reviews" data-uk="Відгуки" data-en="Reviews">Відгуки</a>
     <a href="#booking" data-uk="Запис" data-en="Booking">Запис</a>
     <button id="langSwitch" type="button">EN</button>
   </nav>
@@ -74,6 +75,57 @@
       <article><div class="portrait portrait-a"></div><h3 data-uk="Андрій" data-en="Andrii">Андрій</h3><p>Fade / Texture / Classic</p></article>
       <article><div class="portrait portrait-b"></div><h3 data-uk="Максим" data-en="Max">Максим</h3><p>Beard / Crop / Styling</p></article>
       <article><div class="portrait portrait-c"></div><h3 data-uk="Олексій" data-en="Oleksii">Олексій</h3><p>Classic / Scissor / Long hair</p></article>
+    </div>
+  </section>
+
+
+  <section id="reviews" class="section reviews-section">
+    <div class="wrap">
+      <div class="reviews-head">
+        <div class="section-title">
+          <p class="label" data-uk="ВІДГУКИ" data-en="REVIEWS">ВІДГУКИ</p>
+          <h2 data-uk="Відгуки реальних клієнтів." data-en="Reviews from real clients.">Відгуки реальних клієнтів.</h2>
+          <p class="reviews-note" data-uk="Залишити відгук може лише клієнт, у якого є завершений запис на цей номер телефону." data-en="Only a client with a completed booking linked to the phone number can leave a review.">Залишити відгук може лише клієнт, у якого є завершений запис на цей номер телефону.</p>
+        </div>
+      </div>
+
+      <div class="reviews-layout">
+        <div>
+          <div id="reviewsList" class="reviews-grid" aria-live="polite">
+            <div class="reviews-empty" data-uk="Завантаження відгуків..." data-en="Loading reviews...">Завантаження відгуків...</div>
+          </div>
+        </div>
+
+        <aside class="review-form-card">
+          <p class="label" data-uk="ВАШ ДОСВІД" data-en="YOUR EXPERIENCE">ВАШ ДОСВІД</p>
+          <h3 data-uk="Залишити відгук" data-en="Leave a review">Залишити відгук</h3>
+          <form id="reviewForm" novalidate>
+            <label>
+              <span data-uk="Номер телефону з запису" data-en="Phone number used for booking">Номер телефону з запису</span>
+              <input id="reviewPhone" name="phone" inputmode="tel" autocomplete="tel" required placeholder="+380">
+            </label>
+
+            <fieldset class="rating-field">
+              <legend data-uk="Оцінка" data-en="Rating">Оцінка</legend>
+              <div class="rating-buttons" id="reviewRating" role="radiogroup" aria-label="Rating">
+                <button type="button" data-rating="1" aria-label="1 з 5">★</button>
+                <button type="button" data-rating="2" aria-label="2 з 5">★</button>
+                <button type="button" data-rating="3" aria-label="3 з 5">★</button>
+                <button type="button" data-rating="4" aria-label="4 з 5">★</button>
+                <button type="button" data-rating="5" aria-label="5 з 5">★</button>
+              </div>
+            </fieldset>
+
+            <label>
+              <span data-uk="Відгук" data-en="Review">Відгук</span>
+              <textarea id="reviewText" name="text" rows="5" maxlength="1000" required data-uk-placeholder="Коротко розкажіть про візит..." data-en-placeholder="Tell us briefly about your visit..." placeholder="Коротко розкажіть про візит..."></textarea>
+            </label>
+
+            <button id="reviewSubmit" class="btn accent review-submit" type="submit" data-uk="Опублікувати відгук" data-en="Publish review">Опублікувати відгук</button>
+            <p id="reviewStatus" class="status review-status" aria-live="polite"></p>
+          </form>
+        </aside>
+      </div>
     </div>
   </section>
 
