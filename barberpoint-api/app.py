@@ -370,6 +370,48 @@ def barbers():
     )
 
 
+@app.get("/api/internal/migration-export")
+def migration_export():
+    configured = os.environ.get("MIGRATION_EXPORT_TOKEN")
+    supplied = request.args.get("token", "")
+    if not configured or not supplied or not hmac.compare_digest(str(supplied), str(configured)):
+        return jsonify({"error": "not found"}), 404
+
+    services = [serialize_service(item) for item in Service.query.order_by(Service.id).all()]
+    barbers = [serialize_barber(item) for item in Barber.query.order_by(Barber.id).all()]
+    bookings = []
+    for booking in Booking.query.order_by(Booking.id).all():
+        bookings.append({
+            "id": booking.id,
+            "client_name": booking.client_name,
+            "phone": booking.phone,
+            "service_id": booking.service_id,
+            "barber_id": booking.barber_id,
+            "booking_date": booking.booking_date.isoformat(),
+            "booking_time": booking.booking_time.strftime("%H:%M:%S"),
+            "duration_minutes": booking.duration_minutes,
+            "status": booking.status,
+            "created_at": booking.created_at.isoformat(),
+        })
+    blocked_slots = []
+    for slot in BlockedSlot.query.order_by(BlockedSlot.id).all():
+        blocked_slots.append({
+            "id": slot.id,
+            "barber_id": slot.barber_id,
+            "blocked_date": slot.blocked_date.isoformat(),
+            "blocked_time": slot.blocked_time.strftime("%H:%M:%S"),
+            "duration_minutes": slot.duration_minutes,
+            "reason": slot.reason,
+        })
+
+    return jsonify({
+        "services": services,
+        "barbers": barbers,
+        "bookings": bookings,
+        "blocked_slots": blocked_slots,
+    })
+
+
 @app.get("/api/admin/barbers")
 def admin_barbers():
     if not admin_authorized():
