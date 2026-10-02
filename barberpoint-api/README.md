@@ -1,53 +1,76 @@
 # BarberPoint API
 
-Flask + PostgreSQL backend for the BarberPoint portfolio project.
+Production-style Flask backend for the BarberPoint portfolio project.
 
-## Production
+## Architecture
 
-- Frontend: `https://323erir6.github.io/barberpoint/`
-- API: `https://barberpoint-api-oneone.onrender.com`
-- Admin UI: `https://323erir6.github.io/barberpoint/admin.html`
+- Frontend: GitHub Pages
+- Public API: Flask on Render
+- Database: PostgreSQL on Supabase
+- Private database bridge: Supabase Edge Function
+- Admin authentication: server-side `ADMIN_KEY`
+- Database tables are protected with Row Level Security and have no public policies
+
+The browser never receives database credentials or the private Supabase store key.
 
 ## Features
 
-- PostgreSQL persistence
-- Services and barbers loaded through REST API
-- Dynamic free time slots
+- Services and barbers stored in PostgreSQL
+- Dynamic available time slots
 - 30-minute slot grid with working-hours validation
 - Booking horizon limited to 90 days
 - Server-side booking validation
-- PostgreSQL advisory lock to prevent double booking races
-- Admin booking management
-- Manual blocked slots
-- Europe/Kyiv availability calculations
-- CORS limited to the portfolio origin and local development
+- Atomic booking creation to prevent double booking
+- Protected admin API
+- Blocked time slots
+- Barber creation from the admin panel
+- Admin calendar and filtering
+- CORS restricted to the GitHub Pages portfolio
+- Request size limits, rate limiting and security headers
 
-## API
+## Public endpoints
 
-Public:
 - `GET /api/health`
 - `GET /api/services`
 - `GET /api/barbers`
 - `GET /api/available-slots?barber_id=1&service_id=1&date=YYYY-MM-DD`
 - `POST /api/bookings`
 
-Admin, requires `X-Admin-Key`:
+## Admin endpoints
+
+Require `X-Admin-Key`.
+
+- `GET /api/admin/barbers`
+- `POST /api/admin/barbers`
+- `GET /api/admin/calendar?month=YYYY-MM`
 - `GET /api/admin/bookings`
 - `PATCH /api/admin/bookings/:id`
 - `GET /api/admin/blocked-slots`
 - `POST /api/admin/blocked-slots`
 - `DELETE /api/admin/blocked-slots/:id`
 
-Secrets are stored only as Render environment variables and are not committed to GitHub.
+## Render environment variables
 
-## Deployment checks
+- `ADMIN_KEY`
+- `SUPABASE_STORE_URL`
+- `SUPABASE_STORE_KEY`
 
-GitHub Actions runs a production smoke test after pushes to `main`. It verifies:
+Database credentials are not committed to GitHub.
 
-- the API is reachable
-- PostgreSQL is connected
-- seeded services and barbers are available
-- availability generation works
-- invalid/out-of-hours bookings are rejected server-side
-- admin endpoints reject unauthenticated access
-- GitHub Pages receives the expected CORS header
+## Render commands
+
+Build:
+
+```
+pip install -r barberpoint-api/requirements.txt
+```
+
+Start:
+
+```
+gunicorn --chdir barberpoint-api app:app
+```
+
+## Automated checks
+
+GitHub Actions runs production smoke tests, dependency audits and CodeQL checks after pushes to `main`.
