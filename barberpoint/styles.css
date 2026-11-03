@@ -142,3 +142,25 @@ html{
   .review-form-card h3{font-size:27px}
   .rating-buttons button{flex:1;min-width:0}
 }
+
+
+/* UI audit: typography, keyboard focus and autofill are shared with native controls. */
+button, input, select, textarea { font-family: inherit; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .85; }
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px #141a1d inset;
+  box-shadow: 0 0 0 1000px #141a1d inset;
+  caret-color: var(--text);
+  transition: background-color 100000s ease-in-out 0s;
+}
