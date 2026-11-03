@@ -9,7 +9,6 @@
     blockDuration: 'Тривалість'
   };
   const instances = [];
-  const optionMarker = document.createElement('span');
 
   function close(instance, restoreFocus = false) {
     instance.root.classList.remove('is-open');
