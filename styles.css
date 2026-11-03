@@ -148,3 +148,332 @@ html{
   height:0;
   display:none;
 }
+
+
+/* OneOne pricing and theme system */
+:root {
+  --accent-ink: #090909;
+  --accent-soft: rgba(217,255,63,.09);
+  --pricing-band: #0d0f0d;
+  --ring: #303030;
+  --ticker-text: #c8c6bf;
+  --stack-text: #c6c4bd;
+  --scroll-track: #090909;
+  --scroll-thumb: #3c4130;
+}
+
+/* Default OneOne is intentionally unchanged. Other palettes adapt every surface. */
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f8f6;
+  --panel: #fff;
+  --panel-2: #e8eeea;
+  --text: #15211d;
+  --muted: #5e6d65;
+  --line: #d5dfd8;
+  --accent: #176b54;
+  --accent-ink: #fff;
+  --accent-soft: rgba(23,107,84,.09);
+  --pricing-band: #eaf0eb;
+  --ring: #c7d7cb;
+  --ticker-text: #4d6055;
+  --stack-text: #4f6257;
+  --scroll-track: #f6f8f6;
+  --scroll-thumb: #9aaca0;
+}
+html[data-theme="apex"] {
+  color-scheme: dark;
+  --bg: #080a08;
+  --panel: #101410;
+  --panel-2: #171e17;
+  --text: #f3f5ec;
+  --muted: #a2aaa0;
+  --line: #303a2e;
+  --accent: #cfff2f;
+  --accent-ink: #101410;
+  --accent-soft: rgba(207,255,47,.095);
+  --pricing-band: #101510;
+  --ring: #3a4937;
+  --ticker-text: #b7c0b0;
+  --stack-text: #c5d0bd;
+  --radius: 12px;
+  --scroll-track: #080a08;
+  --scroll-thumb: #47523d;
+}
+html[data-theme="nova"] {
+  color-scheme: light;
+  --bg: #f4efe7;
+  --panel: #fffbf5;
+  --panel-2: #e9e0d3;
+  --text: #241e19;
+  --muted: #71675c;
+  --line: #d9ccbd;
+  --accent: #81502f;
+  --accent-ink: #fffaf3;
+  --accent-soft: rgba(129,80,47,.09);
+  --pricing-band: #ebe1d4;
+  --ring: #cdbba8;
+  --ticker-text: #6c6156;
+  --stack-text: #716154;
+  --radius: 26px;
+  --scroll-track: #f4efe7;
+  --scroll-thumb: #b49b80;
+}
+html[data-theme="barber"] {
+  color-scheme: dark;
+  --bg: #0d1012;
+  --panel: #151a1d;
+  --panel-2: #1e2529;
+  --text: #f3f1eb;
+  --muted: #a3a8aa;
+  --line: #343d42;
+  --accent: #ff5a36;
+  --accent-ink: #111517;
+  --accent-soft: rgba(255,90,54,.095);
+  --pricing-band: #101518;
+  --ring: #3a4348;
+  --ticker-text: #c1c6c7;
+  --stack-text: #c4c9c9;
+  --radius: 18px;
+  --scroll-track: #0d1012;
+  --scroll-thumb: #60433a;
+}
+html:not([data-theme="light"]):not([data-theme="nova"]) { color-scheme: dark; }
+
+body::selection { background: var(--accent); color: var(--accent-ink); }
+.primary, .mock-cta { color: var(--accent-ink); }
+.orbit-ring { border-color: var(--ring); }
+.ticker { color: var(--ticker-text); }
+.stack span { color: var(--stack-text); }
+.preview-shade { background: radial-gradient(circle at 74% 48%, var(--accent-soft), transparent 29%); }
+.project-visual { color: #f7f4ef; }
+.project-card .thumb { color: #f7f4ef; }
+.coffee-thumb small, .barber-thumb small { color: #eee9e1; }
+
+html[data-theme="nova"] .hero h1,
+html[data-theme="nova"] .section h2,
+html[data-theme="nova"] .pricing-card h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -.045em;
+}
+html[data-theme="nova"] .hero-orbit { opacity: .76; }
+html[data-theme="nova"] .mock-nav b { color: #e6b77e; }
+html[data-theme="apex"] .hero h1 { font-weight: 950; font-style: italic; text-transform: uppercase; }
+html[data-theme="apex"] .pricing-card,
+html[data-theme="apex"] .card,
+html[data-theme="apex"] .project-featured { border-radius: 10px; }
+html[data-theme="barber"] h1,
+html[data-theme="barber"] h2 { letter-spacing: -.075em; font-weight: 900; }
+html[data-theme="barber"] .pricing-card { border-radius: 14px; }
+html[data-theme="light"] .noise,
+html[data-theme="nova"] .noise { opacity: .016; }
+
+/* Site-wide theme selector in the top navigation */
+.visually-hidden {
+  position: absolute!important;
+  width: 1px!important;
+  height: 1px!important;
+  padding: 0!important;
+  margin: -1px!important;
+  overflow: hidden!important;
+  clip-path: inset(50%)!important;
+  border: 0!important;
+  white-space: nowrap!important;
+}
+.nav nav { gap: 20px; align-items: center; }
+.theme-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 181px;
+  min-height: 39px;
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  transition: border-color .2s ease, background .2s ease;
+}
+.theme-picker:hover { border-color: var(--muted); }
+.theme-picker:focus-within { border-color: var(--accent); outline: 2px solid var(--accent-soft); outline-offset: 2px; }
+.theme-swatch {
+  position: absolute;
+  z-index: 1;
+  left: 12px;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.theme-picker::after {
+  content: "⌄";
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-57%);
+  pointer-events: none;
+  font-size: 19px;
+  line-height: 1;
+  color: var(--muted);
+}
+.theme-picker select {
+  width: 100%;
+  height: 38px;
+  padding: 0 27px 0 33px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  cursor: pointer;
+}
+.theme-picker select option { background: var(--panel); color: var(--text); }
+.lang-switch { min-width: 42px; }
+.lang-switch:focus-visible,
+.nav a:focus-visible,
+.btn:focus-visible,
+.pricing-cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* Prices: three distinct service levels with a single consistent hierarchy */
+.pricing-section {
+  background: var(--pricing-band);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transition: background .24s ease, border-color .24s ease;
+}
+.pricing-head { align-items: end; }
+.pricing-head h2 { margin-bottom: 0; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.pricing-card {
+  min-width: 0;
+  padding: clamp(22px, 2.6vw, 34px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  position: relative;
+  overflow: hidden;
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.pricing-card:hover { transform: translateY(-4px); border-color: var(--muted); }
+.pricing-card-featured {
+  border-color: var(--accent);
+  background: linear-gradient(155deg, var(--accent-soft) 0%, var(--panel) 52%);
+}
+.pricing-card-featured::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 27px;
+  right: 27px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 0 0 8px 8px;
+}
+.pricing-card-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 42px; }
+.pricing-index { color: var(--muted); font-size: 10px; font-weight: 850; letter-spacing: .17em; }
+.pricing-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 19px;
+  line-height: 1;
+}
+.pricing-card h3 {
+  margin: 0 0 15px;
+  max-width: 330px;
+  min-height: 90px;
+  font-size: clamp(24px, 2.5vw, 31px);
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -.045em;
+}
+.pricing-description { margin: 0 0 32px; min-height: 80px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+.pricing-amount {
+  margin-top: auto;
+  padding-bottom: 25px;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(27px, 2.65vw, 40px);
+  font-weight: 850;
+  letter-spacing: -.06em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pricing-amount span { color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: 0; }
+.pricing-features { list-style: none; margin: 25px 0 33px; padding: 0; display: grid; gap: 14px; }
+.pricing-features li { position: relative; padding-left: 24px; color: var(--text); font-size: 13px; }
+.pricing-features li::before {
+  content: "↗";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  color: var(--accent);
+  font-weight: 900;
+}
+.pricing-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  margin-top: auto;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 13px;
+  font-weight: 800;
+  transition: transform .2s ease, filter .2s ease;
+}
+.pricing-cta:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.pricing-footnote { margin: 23px 0 0; font-size: 12px; color: var(--muted); }
+
+/* Page scrollbar follows the active theme instead of staying dark on light themes. */
+html { scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+::-webkit-scrollbar-track { background: var(--scroll-track); }
+::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-color: var(--scroll-track); }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar-corner { background: var(--scroll-track); }
+
+/* Mobile: keep the theme selector available even when navigation links collapse. */
+@media (max-width: 1020px) { .nav nav { gap: 13px; } }
+@media (max-width: 900px) {
+  .nav nav { gap: 12px; }
+  .pricing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pricing-card:last-child { grid-column: 1 / -1; }
+  .pricing-card h3 { min-height: 0; }
+  .pricing-description { min-height: 0; }
+  .pricing-card-top { margin-bottom: 28px; }
+}
+@media (max-width: 600px) {
+  .nav { gap: 10px; }
+  .nav nav { gap: 9px; }
+  .logo { font-size: 20px; }
+  .theme-picker { width: 146px; min-height: 36px; }
+  .theme-picker select { height: 35px; font-size: 11px; }
+  .lang-switch { padding: 7px 9px; min-width: 39px; }
+  .pricing-grid { grid-template-columns: 1fr; gap: 13px; }
+  .pricing-card:last-child { grid-column: auto; }
+  .pricing-card { padding: 26px; }
+  .pricing-card h3 { font-size: 28px; }
+  .pricing-amount { font-size: clamp(29px, 8vw, 37px); }
+}
+@media (max-width: 355px) {
+  .theme-picker { width: 128px; }
+  .nav nav { gap: 7px; }
+  .logo { font-size: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pricing-card, .pricing-cta { transition: none; }
+}
