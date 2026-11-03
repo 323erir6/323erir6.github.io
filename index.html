@@ -14,8 +14,8 @@
       }
     } catch {}
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261103-pricing-themes1" />
-  <script src="script.js?v=20261103-pricing-themes1" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261103-custom-dropdown2" />
+  <script src="script.js?v=20261103-custom-dropdown2" defer></script>
 
   <!-- OneOne production metadata -->
   <link rel="canonical" href="https://323erir6.github.io/" />
@@ -47,16 +47,20 @@
       <a href="#skills" data-uk="Навички" data-en="Skills">Навички</a>
       <a href="#pricing" data-uk="Ціни" data-en="Pricing">Ціни</a>
       <a href="#contact" data-uk="Контакти" data-en="Contact">Контакти</a>
-      <div class="theme-picker">
+      <div class="theme-picker" id="themePicker">
         <span class="theme-swatch" aria-hidden="true"></span>
-        <label class="visually-hidden" for="themeSelect" data-uk="Тема оформлення" data-en="Visual theme">Тема оформлення</label>
-        <select id="themeSelect" name="theme">
-          <option value="oneone">OneOne</option>
-          <option value="light" data-uk="Світла" data-en="White">Світла</option>
-          <option value="apex">APEX Detailing</option>
-          <option value="nova">NOVA Coffee</option>
-          <option value="barber">BarberPoint</option>
-        </select>
+        <span class="visually-hidden" id="themeControlLabel" data-uk="Тема оформлення" data-en="Visual theme">Тема оформлення</span>
+        <button class="theme-trigger" id="themeTrigger" type="button" aria-labelledby="themeControlLabel themeCurrent" aria-haspopup="listbox" aria-controls="themeMenu" aria-expanded="false">
+          <span id="themeCurrent">OneOne</span>
+          <span class="theme-chevron" aria-hidden="true"></span>
+        </button>
+        <div class="theme-menu" id="themeMenu" role="listbox" aria-labelledby="themeControlLabel">
+          <button class="theme-option" type="button" role="option" tabindex="-1" data-theme-value="oneone" aria-selected="true"><span class="theme-option-dot"></span><span>OneOne</span></button>
+          <button class="theme-option" type="button" role="option" tabindex="-1" data-theme-value="light" aria-selected="false"><span class="theme-option-dot"></span><span data-uk="Світла" data-en="White">Світла</span></button>
+          <button class="theme-option" type="button" role="option" tabindex="-1" data-theme-value="apex" aria-selected="false"><span class="theme-option-dot"></span><span>APEX Detailing</span></button>
+          <button class="theme-option" type="button" role="option" tabindex="-1" data-theme-value="nova" aria-selected="false"><span class="theme-option-dot"></span><span>NOVA Coffee</span></button>
+          <button class="theme-option" type="button" role="option" tabindex="-1" data-theme-value="barber" aria-selected="false"><span class="theme-option-dot"></span><span>BarberPoint</span></button>
+        </div>
       </div>
       <button class="lang-switch" id="langSwitch" type="button" aria-label="Change language">EN</button>
     </nav>
