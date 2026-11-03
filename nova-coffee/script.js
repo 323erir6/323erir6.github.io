@@ -96,6 +96,82 @@ document.querySelectorAll('.filters button').forEach(btn=>btn.addEventListener('
   document.querySelectorAll('.menu-grid article').forEach(item=>item.classList.toggle('hidden',f!=='all'&&item.dataset.cat!==f));
 }));
 
+// Keep dropdown motion consistent with the site and respect reduced-motion preferences.
+function animateCustomDropdown(menu, trigger, opening) {
+  if (!menu || !trigger) return;
+  menu.getAnimations?.().forEach(animation => animation.cancel());
+  menu.dataset.open = String(opening);
+  trigger.setAttribute('aria-expanded', String(opening));
+  if (opening) menu.hidden = false;
+
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion || typeof menu.animate !== 'function') {
+    if (!opening) menu.hidden = true;
+    return;
+  }
+
+  const keyframes = opening
+    ? [{ opacity: 0, transform: 'translateY(-9px) scale(.98)' }, { opacity: 1, transform: 'translateY(0) scale(1)' }]
+    : [{ opacity: 1, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: 'translateY(-7px) scale(.985)' }];
+  const animation = menu.animate(keyframes, {
+    duration: opening ? 210 : 145,
+    easing: opening ? 'cubic-bezier(.16,1,.3,1)' : 'ease-in',
+    fill: 'forwards'
+  });
+  if (!opening) {
+    animation.finished.then(() => {
+      if (menu.dataset.open === 'false') {
+        menu.hidden = true;
+        animation.cancel();
+      }
+    }).catch(() => {});
+  }
+}
+
+function enablePickerKeyboard(trigger, menu, options, selectValue) {
+  const enabled = () => options.filter(option => !option.disabled);
+  trigger.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    animateCustomDropdown(menu, trigger, true);
+    const choices = enabled();
+    const selected = choices.find(option => option.classList.contains('selected'));
+    (selected || choices[event.key === 'ArrowDown' ? 0 : choices.length - 1])?.focus();
+  });
+  menu.addEventListener('keydown', event => {
+    const choices = enabled();
+    const index = choices.indexOf(document.activeElement);
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      animateCustomDropdown(menu, trigger, false);
+      trigger.focus();
+      return;
+    }
+    if (event.key === 'Tab') {
+      animateCustomDropdown(menu, trigger, false);
+      return;
+    }
+    let next = -1;
+    if (event.key === 'ArrowDown') next = (index + 1) % choices.length;
+    if (event.key === 'ArrowUp') next = (index - 1 + choices.length) % choices.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = choices.length - 1;
+    if (next >= 0 && choices[next]) {
+      event.preventDefault();
+      choices[next].focus();
+    }
+  });
+  options.forEach(option => {
+    option.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectValue(option.dataset.value);
+        trigger.focus();
+      }
+    });
+  });
+}
+
 const tablePicker=document.getElementById('tablePicker');
 const tableInput=tablePicker.querySelector('input[name="table"]');
 const tableTrigger=tablePicker.querySelector('.select-trigger');
@@ -110,7 +186,7 @@ function refreshTableLabel(){
   const option=tableOptions.find(opt=>opt.dataset.value===tableInput.value)||tableOptions[0];
   tableValue.textContent=option.dataset[currentLang()]||option.textContent;
 }
-function closeTableMenu(){tableMenu.hidden=true;tableTrigger.setAttribute('aria-expanded','false');}
+function closeTableMenu(){animateCustomDropdown(tableMenu,tableTrigger,false);}
 function selectTable(value){
   const option=tableOptions.find(opt=>opt.dataset.value===value);
   if(option?.disabled) return;
@@ -118,7 +194,11 @@ function selectTable(value){
   if(node?.disabled) return;
   tableInput.value=value;
   tableNodes.forEach(n=>n.classList.toggle('selected',n.dataset.table===value));
-  tableOptions.forEach(opt=>opt.classList.toggle('selected',opt.dataset.value===value));
+  tableOptions.forEach(opt=>{
+    const selected=opt.dataset.value===value;
+    opt.classList.toggle('selected',selected);
+    opt.setAttribute('aria-selected',String(selected));
+  });
   refreshTableLabel();
   closeTableMenu();
 }
@@ -142,10 +222,15 @@ function updateTableAvailability(){
   if(selectedNode?.disabled) selectTable('any');
 }
 
-tableTrigger.addEventListener('click',e=>{e.stopPropagation();const opening=tableMenu.hidden;tableMenu.hidden=!opening;tableTrigger.setAttribute('aria-expanded',String(opening));});
+tableTrigger.addEventListener('click',e=>{
+  e.stopPropagation();
+  const opening=tableTrigger.getAttribute('aria-expanded')!=='true';
+  animateCustomDropdown(tableMenu,tableTrigger,opening);
+});
 tableOptions.forEach(opt=>opt.addEventListener('click',()=>selectTable(opt.dataset.value)));
 tableNodes.forEach(node=>node.addEventListener('click',()=>selectTable(node.dataset.table)));
 document.addEventListener('click',e=>{if(!tablePicker.contains(e.target))closeTableMenu();});
+enablePickerKeyboard(tableTrigger,tableMenu,tableOptions,selectTable);
 
 guestPicker.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
   guestPicker.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
