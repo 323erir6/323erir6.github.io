@@ -6,8 +6,8 @@
   <meta name="description" content="APEX Detailing — концепт преміального сайту детейлінг-студії: послуги, пакети, галерея та онлайн-запис. Проєкт OneOne." />
   <meta name="theme-color" content="#080808" />
   <title>APEX Detailing — Concept by OneOne</title>
-  <link rel="stylesheet" href="styles.css?v=20261002-scrollbar1" />
-  <script src="script.js" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261103-dropdown-audit" />
+  <script src="script.js?v=20261103-dropdown-audit" defer></script>
 
   <!-- OneOne production metadata -->
   <link rel="canonical" href="https://323erir6.github.io/apex-detailing/" />
@@ -150,12 +150,12 @@
           <label class="service-field"><span data-uk="Послуга" data-en="Service">Послуга</span>
             <div class="custom-select service-select" id="servicePicker">
               <input type="hidden" name="service" value="Essential">
-              <button class="select-trigger" type="button" aria-expanded="false"><span class="select-value">Essential</span><span class="select-chevron" aria-hidden="true"></span></button>
-              <div class="select-menu" hidden>
-                <button type="button" class="select-option selected" data-value="Essential">Essential</button>
-                <button type="button" class="select-option" data-value="Signature">Signature</button>
-                <button type="button" class="select-option" data-value="Ultimate">Ultimate</button>
-                <button type="button" class="select-option" data-value="Other" data-uk="Інша послуга" data-en="Other service">Інша послуга</button>
+              <button class="select-trigger" type="button" aria-expanded="false" aria-haspopup="listbox" aria-controls="serviceOptionsMenu"><span class="select-value">Essential</span><span class="select-chevron" aria-hidden="true"></span></button>
+              <div class="select-menu" id="serviceOptionsMenu" role="listbox" hidden>
+                <button type="button" role="option" tabindex="-1" class="select-option selected" data-value="Essential">Essential</button>
+                <button type="button" role="option" tabindex="-1" class="select-option" data-value="Signature">Signature</button>
+                <button type="button" role="option" tabindex="-1" class="select-option" data-value="Ultimate">Ultimate</button>
+                <button type="button" role="option" tabindex="-1" class="select-option" data-value="Other" data-uk="Інша послуга" data-en="Other service">Інша послуга</button>
               </div>
             </div>
           </label>
