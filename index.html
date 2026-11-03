@@ -1,13 +1,21 @@
 <!doctype html>
-<html lang="uk">
+<html lang="uk" data-theme="oneone">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="OneOne — портфоліо веброзробника. Сучасні адаптивні сайти для малого бізнесу, продумані інтерфейси та інтерактивні вебрішення." />
   <meta name="theme-color" content="#0a0a0a" />
   <title>OneOne — Web Developer</title>
-  <link rel="stylesheet" href="styles.css?v=20261002-scrollbar1" />
-  <script src="script.js" defer></script>
+  <script>
+    try {
+      const storedTheme = localStorage.getItem('oneone-theme');
+      if (['oneone', 'light', 'apex', 'nova', 'barber'].includes(storedTheme)) {
+        document.documentElement.dataset.theme = storedTheme;
+      }
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="styles.css?v=20261103-pricing-themes1" />
+  <script src="script.js?v=20261103-pricing-themes1" defer></script>
 
   <!-- OneOne production metadata -->
   <link rel="canonical" href="https://323erir6.github.io/" />
@@ -37,7 +45,19 @@
     <nav aria-label="Primary navigation">
       <a href="#projects" data-uk="Проєкти" data-en="Projects">Проєкти</a>
       <a href="#skills" data-uk="Навички" data-en="Skills">Навички</a>
+      <a href="#pricing" data-uk="Ціни" data-en="Pricing">Ціни</a>
       <a href="#contact" data-uk="Контакти" data-en="Contact">Контакти</a>
+      <div class="theme-picker">
+        <span class="theme-swatch" aria-hidden="true"></span>
+        <label class="visually-hidden" for="themeSelect" data-uk="Тема оформлення" data-en="Visual theme">Тема оформлення</label>
+        <select id="themeSelect" name="theme">
+          <option value="oneone">OneOne</option>
+          <option value="light" data-uk="Світла" data-en="White">Світла</option>
+          <option value="apex">APEX Detailing</option>
+          <option value="nova">NOVA Coffee</option>
+          <option value="barber">BarberPoint</option>
+        </select>
+      </div>
       <button class="lang-switch" id="langSwitch" type="button" aria-label="Change language">EN</button>
     </nav>
   </header>
@@ -118,6 +138,70 @@
             <div class="links"><a href="barberpoint/index.html" data-uk="Відкрити демо ↗" data-en="Open demo ↗">Відкрити демо ↗</a></div>
           </div>
         </article>
+      </div>
+    </section>
+
+
+    <section id="pricing" class="section pricing-section">
+      <div class="container">
+        <div class="section-head pricing-head">
+          <div>
+            <p class="eyebrow" data-uk="ФОРМАТИ РОЗРОБКИ / 2026" data-en="DEVELOPMENT OPTIONS / 2026">ФОРМАТИ РОЗРОБКИ / 2026</p>
+            <h2 data-uk="Вартість розробки." data-en="Development pricing.">Вартість розробки.</h2>
+          </div>
+          <p class="section-note" data-uk="Від презентації бізнесу до повноцінної вебсистеми. Фінальна вартість залежить від задач і функціоналу." data-en="From a business presentation to a full web system. The final cost depends on scope and functionality.">Від презентації бізнесу до повноцінної вебсистеми. Фінальна вартість залежить від задач і функціоналу.</p>
+        </div>
+
+        <div class="pricing-grid">
+          <article class="pricing-card">
+            <div class="pricing-card-top">
+              <span class="pricing-index">01 / ESSENTIAL</span>
+              <span class="pricing-mark" aria-hidden="true">↗</span>
+            </div>
+            <h3 data-uk="Сайт-візитка" data-en="Business website">Сайт-візитка</h3>
+            <p class="pricing-description" data-uk="Лаконічний сайт, який професійно презентує ваш бізнес і його послуги." data-en="A focused website that professionally presents your business and its services.">Лаконічний сайт, який професійно презентує ваш бізнес і його послуги.</p>
+            <div class="pricing-amount">3 000–6 000 <span data-uk="грн" data-en="UAH">грн</span></div>
+            <ul class="pricing-features">
+              <li data-uk="Адаптивний дизайн" data-en="Responsive design">Адаптивний дизайн</li>
+              <li data-uk="Інформація про послуги" data-en="Services overview">Інформація про послуги</li>
+              <li data-uk="Контакти та зв'язок" data-en="Contacts and inquiries">Контакти та зв'язок</li>
+            </ul>
+            <a class="pricing-cta" href="#contact" data-uk="Обговорити проєкт ↗" data-en="Discuss a project ↗">Обговорити проєкт ↗</a>
+          </article>
+
+          <article class="pricing-card pricing-card-featured">
+            <div class="pricing-card-top">
+              <span class="pricing-index">02 / FULL STACK</span>
+              <span class="pricing-mark" aria-hidden="true">↗</span>
+            </div>
+            <h3 data-uk="Багатосторінковий сайт із інфраструктурою" data-en="Multi-page website with infrastructure">Багатосторінковий сайт із інфраструктурою</h3>
+            <p class="pricing-description" data-uk="Повноцінний вебресурс зі сторінками, інтерактивністю та серверною логікою." data-en="A complete website with multiple pages, interactive features and server-side logic.">Повноцінний вебресурс зі сторінками, інтерактивністю та серверною логікою.</p>
+            <div class="pricing-amount">7 000–15 000 <span data-uk="грн" data-en="UAH">грн</span></div>
+            <ul class="pricing-features">
+              <li data-uk="Декілька сторінок" data-en="Multiple pages">Декілька сторінок</li>
+              <li data-uk="Backend та база даних" data-en="Backend and database">Backend та база даних</li>
+              <li data-uk="Інтерактивні функції" data-en="Interactive features">Інтерактивні функції</li>
+            </ul>
+            <a class="pricing-cta" href="#contact" data-uk="Обговорити проєкт ↗" data-en="Discuss a project ↗">Обговорити проєкт ↗</a>
+          </article>
+
+          <article class="pricing-card">
+            <div class="pricing-card-top">
+              <span class="pricing-index">03 / CUSTOM</span>
+              <span class="pricing-mark" aria-hidden="true">↗</span>
+            </div>
+            <h3 data-uk="Індивідуальний вебпроєкт" data-en="Custom web project">Індивідуальний вебпроєкт</h3>
+            <p class="pricing-description" data-uk="Складні рішення, створені під специфіку ваших процесів і задач." data-en="Advanced solutions built around your specific processes and requirements.">Складні рішення, створені під специфіку ваших процесів і задач.</p>
+            <div class="pricing-amount">20 000+ <span data-uk="грн" data-en="UAH">грн</span></div>
+            <ul class="pricing-features">
+              <li data-uk="Індивідуальна архітектура" data-en="Custom architecture">Індивідуальна архітектура</li>
+              <li data-uk="Інтеграції та API" data-en="Integrations and APIs">Інтеграції та API</li>
+              <li data-uk="Складна бізнес-логіка" data-en="Advanced business logic">Складна бізнес-логіка</li>
+            </ul>
+            <a class="pricing-cta" href="#contact" data-uk="Обговорити проєкт ↗" data-en="Discuss a project ↗">Обговорити проєкт ↗</a>
+          </article>
+        </div>
+        <p class="pricing-footnote" data-uk="Кожен проєкт оцінюється індивідуально після короткого обговорення." data-en="Every project is estimated individually after a short discussion.">Кожен проєкт оцінюється індивідуально після короткого обговорення.</p>
       </div>
     </section>
 
