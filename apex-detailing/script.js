@@ -90,6 +90,82 @@ function setFieldError(control, text) {
 
 const datePicker = createDatePicker(document.querySelector('[data-date-picker]'));
 
+// Keep dropdown motion consistent with the site and respect reduced-motion preferences.
+function animateCustomDropdown(menu, trigger, opening) {
+  if (!menu || !trigger) return;
+  menu.getAnimations?.().forEach(animation => animation.cancel());
+  menu.dataset.open = String(opening);
+  trigger.setAttribute('aria-expanded', String(opening));
+  if (opening) menu.hidden = false;
+
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion || typeof menu.animate !== 'function') {
+    if (!opening) menu.hidden = true;
+    return;
+  }
+
+  const keyframes = opening
+    ? [{ opacity: 0, transform: 'translateY(-9px) scale(.98)' }, { opacity: 1, transform: 'translateY(0) scale(1)' }]
+    : [{ opacity: 1, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: 'translateY(-7px) scale(.985)' }];
+  const animation = menu.animate(keyframes, {
+    duration: opening ? 210 : 145,
+    easing: opening ? 'cubic-bezier(.16,1,.3,1)' : 'ease-in',
+    fill: 'forwards'
+  });
+  if (!opening) {
+    animation.finished.then(() => {
+      if (menu.dataset.open === 'false') {
+        menu.hidden = true;
+        animation.cancel();
+      }
+    }).catch(() => {});
+  }
+}
+
+function enablePickerKeyboard(trigger, menu, options, selectValue) {
+  const enabled = () => options.filter(option => !option.disabled);
+  trigger.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    animateCustomDropdown(menu, trigger, true);
+    const choices = enabled();
+    const selected = choices.find(option => option.classList.contains('selected'));
+    (selected || choices[event.key === 'ArrowDown' ? 0 : choices.length - 1])?.focus();
+  });
+  menu.addEventListener('keydown', event => {
+    const choices = enabled();
+    const index = choices.indexOf(document.activeElement);
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      animateCustomDropdown(menu, trigger, false);
+      trigger.focus();
+      return;
+    }
+    if (event.key === 'Tab') {
+      animateCustomDropdown(menu, trigger, false);
+      return;
+    }
+    let next = -1;
+    if (event.key === 'ArrowDown') next = (index + 1) % choices.length;
+    if (event.key === 'ArrowUp') next = (index - 1 + choices.length) % choices.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = choices.length - 1;
+    if (next >= 0 && choices[next]) {
+      event.preventDefault();
+      choices[next].focus();
+    }
+  });
+  options.forEach(option => {
+    option.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectValue(option.dataset.value);
+        trigger.focus();
+      }
+    });
+  });
+}
+
 const servicePicker = document.getElementById('servicePicker');
 const serviceInput = servicePicker.querySelector('input[name="service"]');
 const serviceTrigger = servicePicker.querySelector('.select-trigger');
@@ -105,23 +181,26 @@ function refreshServiceLabel() {
   serviceValue.textContent = serviceLabel(option);
 }
 function closeServiceMenu() {
-  serviceMenu.hidden = true;
-  serviceTrigger.setAttribute('aria-expanded', 'false');
+  animateCustomDropdown(serviceMenu, serviceTrigger, false);
 }
 function selectService(value) {
   serviceInput.value = value;
-  serviceOptions.forEach(o => o.classList.toggle('selected', o.dataset.value === value));
+  serviceOptions.forEach(o => {
+    const selected = o.dataset.value === value;
+    o.classList.toggle('selected', selected);
+    o.setAttribute('aria-selected', String(selected));
+  });
   refreshServiceLabel();
   closeServiceMenu();
 }
 serviceTrigger.addEventListener('click', e => {
   e.stopPropagation();
-  const opening = serviceMenu.hidden;
-  serviceMenu.hidden = !opening;
-  serviceTrigger.setAttribute('aria-expanded', String(opening));
+  const opening = serviceTrigger.getAttribute('aria-expanded') !== 'true';
+  animateCustomDropdown(serviceMenu, serviceTrigger, opening);
 });
 serviceOptions.forEach(option => option.addEventListener('click', () => selectService(option.dataset.value)));
 document.addEventListener('click', e => { if (!servicePicker.contains(e.target)) closeServiceMenu(); });
+enablePickerKeyboard(serviceTrigger, serviceMenu, serviceOptions, selectService);
 selectService('Essential');
 
 function setLanguage(lang) {
