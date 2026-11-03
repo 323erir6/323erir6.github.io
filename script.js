@@ -20,6 +20,36 @@ langSwitch.addEventListener('click', () => {
   setLanguage(document.documentElement.lang === 'uk' ? 'en' : 'uk');
 });
 
+
+/* OneOne theme selector: preserve the visitor's choice across sessions. */
+const themeSelect = document.getElementById('themeSelect');
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+const themeColors = Object.freeze({
+  oneone: '#090909',
+  light: '#f6f8f6',
+  apex: '#080a08',
+  nova: '#f4efe7',
+  barber: '#0d1012'
+});
+
+function setTheme(theme) {
+  const selectedTheme = Object.hasOwn(themeColors, theme) ? theme : 'oneone';
+  document.documentElement.dataset.theme = selectedTheme;
+  if (themeSelect) themeSelect.value = selectedTheme;
+  if (themeMeta) themeMeta.setAttribute('content', themeColors[selectedTheme]);
+  safeStorageSet('oneone-theme', selectedTheme);
+}
+
+setTheme(document.documentElement.dataset.theme || 'oneone');
+
+themeSelect?.addEventListener('change', () => {
+  setTheme(themeSelect.value);
+});
+
+window.addEventListener('storage', (event) => {
+  if (event.key === 'oneone-theme') setTheme(event.newValue || 'oneone');
+});
+
 function setupInfiniteMarquee(containerSelector, trackSelector, groupSelector, speed = 52) {
   const container = document.querySelector(containerSelector);
   const track = document.querySelector(trackSelector);
