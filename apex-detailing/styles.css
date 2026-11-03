@@ -73,3 +73,25 @@ html{
   height:0;
   display:none;
 }
+
+
+/* UI audit: typography, keyboard focus and autofill are shared with native controls. */
+button, input, select, textarea { font-family: inherit; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .85; }
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f5f3ec;
+  -webkit-box-shadow: 0 0 0 1000px #121212 inset;
+  box-shadow: 0 0 0 1000px #121212 inset;
+  caret-color: #f5f3ec;
+  transition: background-color 100000s ease-in-out 0s;
+}
