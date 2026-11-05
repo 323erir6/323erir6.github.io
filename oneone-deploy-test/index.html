@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="OneOne — тестовий сайт для перевірки GitHub та Vercel deployment.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0b1110">
+  <title>OneOne — Hosting Test</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1110; --panel:#15201b; --text:#f4f8f5; --muted:#a2b4a9; --accent:#c9ff65; --line:#354337; --ink:#101910; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { min-height:100vh; margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; background:radial-gradient(ellipse at 65% 6%,rgba(201,255,101,.12),transparent 44%),var(--bg); color:var(--text); }
+    .shell { width:min(1080px,calc(100% - 40px)); margin:auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:30px 0; border-bottom:1px solid var(--line); }
+    .brand { font-weight:900; font-size:22px; letter-spacing:-.07em; text-decoration:none; color:inherit; }
+    .brand span { color:var(--accent); }
+    .header-note { color:var(--muted); font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+    main { display:grid; grid-template-columns:1.25fr .75fr; align-items:center; gap:55px; padding:120px 0 95px; }
+    .eyebrow { color:var(--accent); font-size:12px; font-weight:850; letter-spacing:.17em; }
+    h1 { font-weight:900; font-size:clamp(55px,8vw,106px); line-height:.95; letter-spacing:-.075em; margin:21px 0 27px; max-width:830px; }
+    .lead { color:var(--muted); font-size:clamp(16px,2vw,20px); line-height:1.7; max-width:600px; }
+    .actions { margin-top:32px; display:flex; gap:13px; flex-wrap:wrap; }
+    .btn { min-height:50px; border-radius:99px; display:inline-flex; align-items:center; justify-content:center; padding:0 23px; text-decoration:none; font:inherit; font-size:13px; font-weight:800; cursor:pointer; transition:transform .2s ease,background .2s ease; }
+    .btn:hover { transform:translateY(-2px); }
+    .btn:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    .primary { background:var(--accent); color:var(--ink); border:1px solid var(--accent); }
+    .outline { background:transparent; color:var(--text); border:1px solid var(--line); }
+    .outline:hover { background:var(--panel); }
+    .preview { position:relative; padding:31px; border:1px solid var(--line); border-radius:30px; background:linear-gradient(155deg,rgba(201,255,101,.075),transparent 55%),var(--panel); box-shadow:0 28px 90px rgba(0,0,0,.20); }
+    .preview::before { position:absolute; content:""; inset:-1px; border-radius:30px; pointer-events:none; border:1px solid rgba(201,255,101,.12); }
+    .status-line { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+    .dot { width:9px; height:9px; background:var(--accent); border-radius:50%; box-shadow:0 0 0 5px rgba(201,255,101,.11); }
+    .art { min-height:195px; display:grid; place-items:center; }
+    .orb { width:132px; height:132px; border-radius:50%; border:1px solid rgba(201,255,101,.65); display:grid; place-items:center; font-size:34px; font-weight:900; letter-spacing:-.04em; box-shadow:0 0 0 30px rgba(201,255,101,.05),0 0 0 62px rgba(201,255,101,.025); }
+    .preview h2 { font-size:25px; letter-spacing:-.045em; margin:0 0 8px; }
+    .preview p { color:var(--muted); font-size:13px; line-height:1.6; }
+    .data-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:25px; }
+    .data-grid div { padding:13px 10px; border:1px solid var(--line); border-radius:12px; }
+    .data-grid b { display:block; font-size:16px; }
+    .data-grid small { color:var(--muted); font-size:10px; }
+    footer { display:flex; gap:20px; justify-content:space-between; align-items:center; padding:28px 0 40px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    footer a { color:var(--accent); text-decoration:none; }
+    body.is-light { color-scheme:light; --bg:#f8faf6; --panel:#fff; --text:#17241d; --muted:#586b5e; --accent:#286c38; --line:#d9e5da; --ink:#fff; }
+    body.is-light .preview { box-shadow:0 28px 90px rgba(24,64,34,.08); }
+    body.is-light .orb { box-shadow:0 0 0 30px rgba(40,108,56,.05),0 0 0 62px rgba(40,108,56,.025); }
+    @media (max-width:780px) { main { grid-template-columns:1fr; gap:60px; padding:82px 0; } .preview { max-width:550px; width:100%; margin:auto; } }
+    @media (max-width:460px) { .shell { width:min(100% - 28px,1080px); } header { padding:23px 0; } .header-note { font-size:10px; } h1 { font-size:clamp(47px,12.2vw,65px); } .preview { padding:23px; } footer { flex-direction:column; align-items:start; gap:12px; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } * { transition:none!important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a class="brand" href="./" aria-label="OneOne Test">One<span>One.</span></a>
+      <div class="header-note">Deployment Lab / 001</div>
+    </header>
+    <main>
+      <div>
+        <div class="eyebrow">GITHUB → VERCEL → HTTPS</div>
+        <h1>Сайт.<br>У мережі.<br>Без оплати.</h1>
+        <p class="lead">Це окремий некомерційний тестовий сайт OneOne. Він перевіряє публікацію статичних файлів, роботу власної адреси Vercel, адаптивність та HTTPS.</p>
+        <div class="actions">
+          <a class="btn primary" href="#status">Перевірити сайт ↗</a>
+          <button class="btn outline" type="button" id="themeButton" aria-pressed="false">Світла тема</button>
+        </div>
+      </div>
+      <section class="preview" id="status" aria-label="Статус тестового сайту">
+        <div class="status-line"><span class="dot" aria-hidden="true"></span> ONEONE / TEST WEBSITE</div>
+        <div class="art"><div class="orb">01</div></div>
+        <h2>Тестове середовище</h2>
+        <p>Ця сторінка не збирає особисті дані, не використовує базу даних і не приймає платежі.</p>
+        <div class="data-grid">
+          <div><b>HTML</b><small>Структура</small></div>
+          <div><b>CSS</b><small>Оформлення</small></div>
+          <div><b>JS</b><small>Інтерактив</small></div>
+        </div>
+      </section>
+    </main>
+    <footer><span>© 2026 OneOne · Test deployment · Non-commercial</span><a href="https://323erir6.github.io/" target="_blank" rel="noopener noreferrer">Портфоліо OneOne ↗</a></footer>
+  </div>
+  <script>
+    const themeButton = document.getElementById('themeButton');
+    themeButton.addEventListener('click', () => {
+      const isLight = document.body.classList.toggle('is-light');
+      themeButton.textContent = isLight ? 'Темна тема' : 'Світла тема';
+      themeButton.setAttribute('aria-pressed', String(isLight));
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', isLight ? '#f8faf6' : '#0b1110');
+    });
+  </script>
+</body>
+</html>
