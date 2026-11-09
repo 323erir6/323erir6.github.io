@@ -563,3 +563,19 @@ html { scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
 @media (prefers-reduced-motion: reduce) {
   .pricing-card, .pricing-cta, .theme-menu, .theme-chevron, .theme-option { transition: none !important; }
 }
+
+/* ZNAK Tattoo Lab — portfolio showcase */
+.znak-project{margin-top:18px}
+.znak-portfolio-preview{background:#e1ff5b;color:#17191b;display:flex;flex-direction:column;justify-content:space-between;text-decoration:none;padding:26px 30px;isolation:isolate}
+.znak-portfolio-label,.znak-portfolio-bottom{font-family:'Courier New',monospace;font-weight:800;font-size:12px;letter-spacing:.08em}
+.znak-portfolio-bottom{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.znak-portfolio-bottom b{font-family:Arial,sans-serif;font-size:23px;font-weight:500}
+.znak-portfolio-art{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:365px;transform:rotate(-4deg)}
+.znak-portfolio-art::before{content:"";position:absolute;width:clamp(175px,22vw,315px);aspect-ratio:1;border-radius:50%;background:#7655ef;z-index:-1;transform:translate(35%,1%)}
+.znak-portfolio-art strong{font-family:Impact,'Arial Black',sans-serif;font-size:clamp(85px,10vw,160px);letter-spacing:-.075em;line-height:1}
+.znak-portfolio-art strong span{color:#7655ef}
+.znak-portfolio-art small{font-family:'Courier New',monospace;font-size:19px;font-weight:900;letter-spacing:.28em}
+.znak-portfolio-sigil{position:absolute;left:5%;top:0;font-size:75px;line-height:1}
+.znak-portfolio-preview:hover .znak-portfolio-art{transform:rotate(0);transition:transform .3s ease}
+@media(max-width:700px){.znak-portfolio-preview{min-height:365px;padding:22px}.znak-portfolio-art{min-height:250px}.znak-portfolio-art strong{font-size:clamp(78px,18vw,140px)}.znak-portfolio-art small{font-size:14px}.znak-portfolio-sigil{font-size:50px}}
+@media(prefers-reduced-motion:reduce){.znak-portfolio-preview:hover .znak-portfolio-art{transition:none}}
