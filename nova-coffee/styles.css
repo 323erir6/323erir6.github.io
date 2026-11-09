@@ -70,3 +70,46 @@ input:-webkit-autofill:focus {
   caret-color: var(--ink);
   transition: background-color 100000s ease-in-out 0s;
 }
+
+.marquee>.marquee-track {width:100%;max-width:100%;display:flex;
+  flex-wrap:wrap;justify-content:center;transform:none!important;will-change:auto;}
+.marquee-group {display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:12px 28px;white-space:normal;padding:16px 18px;}
+@media(max-width:560px){.marquee-group{gap:10px 14px;font-size:11px;}}
+@media (prefers-reduced-motion:no-preference) {
+  .gallery img {transition:transform .7s cubic-bezier(.22, 1, .36, 1),filter .6s cubic-bezier(.22, 1, .36, 1);}
+  .order-modal-backdrop{animation:novaShadeIn .36s cubic-bezier(.22, 1, .36, 1) both}
+  .order-modal-card{animation:modalIn .42s cubic-bezier(.22, 1, .36, 1) both}
+  .menu-grid article:not(.hidden) {animation:novaItemIn .36s cubic-bezier(.22, 1, .36, 1) both}
+}
+@keyframes novaShadeIn{from{opacity:0}to{opacity:1}}
+@keyframes novaItemIn{from{opacity:.5;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+/* OneOne motion refinement (2026-11-09): intentional easing, no sudden state jumps. */
+@media (prefers-reduced-motion: no-preference) {
+  a, button, input, textarea, select {
+    transition: color .32s cubic-bezier(.22, 1, .36, 1), background-color .32s cubic-bezier(.22, 1, .36, 1),
+      border-color .32s cubic-bezier(.22, 1, .36, 1), box-shadow .4s cubic-bezier(.22, 1, .36, 1),
+      opacity .32s cubic-bezier(.22, 1, .36, 1), transform .42s cubic-bezier(.22, 1, .36, 1),
+      filter .4s cubic-bezier(.22, 1, .36, 1);
+  }
+  :is(.card, .project-card, .project-featured, .pricing-card, .price-card,
+      .booking-card, .blocked-card, .barber-admin-card, .shot, .gallery figure,
+      .flash-card, .artist, .admin-calendar-day, .stats article, .panel) {
+    transition: transform .45s cubic-bezier(.22, 1, .36, 1), background-color .35s cubic-bezier(.22, 1, .36, 1),
+      border-color .35s cubic-bezier(.22, 1, .36, 1), box-shadow .45s cubic-bezier(.22, 1, .36, 1),
+      opacity .35s cubic-bezier(.22, 1, .36, 1), filter .45s cubic-bezier(.22, 1, .36, 1);
+  }
+  :is(.project-card, .pricing-card, .price-card, .flash-card, .shot, .artist, .booking-card,
+      .barber-admin-card):hover {
+    transition-timing-function: cubic-bezier(.22, 1, .36, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

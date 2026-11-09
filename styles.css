@@ -579,3 +579,53 @@ html { scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
 .znak-portfolio-preview:hover .znak-portfolio-art{transform:rotate(0);transition:transform .3s ease}
 @media(max-width:700px){.znak-portfolio-preview{min-height:365px;padding:22px}.znak-portfolio-art{min-height:250px}.znak-portfolio-art strong{font-size:clamp(78px,18vw,140px)}.znak-portfolio-art small{font-size:14px}.znak-portfolio-sigil{font-size:50px}}
 @media(prefers-reduced-motion:reduce){.znak-portfolio-preview:hover .znak-portfolio-art{transition:none}}
+
+/* No scrolling words: keep the technologies in a stationary, readable row. */
+.ticker-track { display:flex; justify-content:center; width:100%; max-width:100%;
+  transform:none!important; will-change:auto; }
+.ticker-group { display:flex; flex-wrap:wrap; justify-content:center; white-space:normal;
+  gap:12px 26px; padding-right:0; }
+@media(max-width:600px){ .ticker-group{gap:10px 15px; font-size:10px;} }
+@media (prefers-reduced-motion:no-preference) {
+  body, .project-featured, .card, .pricing-section, .pricing-card {
+    transition: background-color .5s cubic-bezier(.22, 1, .36, 1), color .4s cubic-bezier(.22, 1, .36, 1),
+      border-color .4s cubic-bezier(.22, 1, .36, 1), box-shadow .45s cubic-bezier(.22, 1, .36, 1);
+  }
+  .theme-menu { transition: opacity .34s cubic-bezier(.22, 1, .36, 1), transform .42s cubic-bezier(.22, 1, .36, 1),
+     visibility 0s linear .42s; }
+  .theme-picker.is-open .theme-menu {
+    transition: opacity .34s cubic-bezier(.22, 1, .36, 1), transform .42s cubic-bezier(.22, 1, .36, 1), visibility 0s; }
+  .project-visual, .project-card .thumb, .znak-portfolio-art {
+    transition: transform .6s cubic-bezier(.22, 1, .36, 1), filter .6s cubic-bezier(.22, 1, .36, 1);
+  }
+  .project-visual:hover { filter: brightness(1.07); }
+}
+
+/* OneOne motion refinement (2026-11-09): intentional easing, no sudden state jumps. */
+@media (prefers-reduced-motion: no-preference) {
+  a, button, input, textarea, select {
+    transition: color .32s cubic-bezier(.22, 1, .36, 1), background-color .32s cubic-bezier(.22, 1, .36, 1),
+      border-color .32s cubic-bezier(.22, 1, .36, 1), box-shadow .4s cubic-bezier(.22, 1, .36, 1),
+      opacity .32s cubic-bezier(.22, 1, .36, 1), transform .42s cubic-bezier(.22, 1, .36, 1),
+      filter .4s cubic-bezier(.22, 1, .36, 1);
+  }
+  :is(.card, .project-card, .project-featured, .pricing-card, .price-card,
+      .booking-card, .blocked-card, .barber-admin-card, .shot, .gallery figure,
+      .flash-card, .artist, .admin-calendar-day, .stats article, .panel) {
+    transition: transform .45s cubic-bezier(.22, 1, .36, 1), background-color .35s cubic-bezier(.22, 1, .36, 1),
+      border-color .35s cubic-bezier(.22, 1, .36, 1), box-shadow .45s cubic-bezier(.22, 1, .36, 1),
+      opacity .35s cubic-bezier(.22, 1, .36, 1), filter .45s cubic-bezier(.22, 1, .36, 1);
+  }
+  :is(.project-card, .pricing-card, .price-card, .flash-card, .shot, .artist, .booking-card,
+      .barber-admin-card):hover {
+    transition-timing-function: cubic-bezier(.22, 1, .36, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

@@ -317,7 +317,14 @@
       .ring,.ring.small{animation:none}
       .btn{transition:none}
     }
-  </style>
+  
+@media(prefers-reduced-motion:no-preference){
+  a,button{transition:color .35s cubic-bezier(.22, 1, .36, 1),
+    border-color .35s cubic-bezier(.22, 1, .36, 1),background-color .35s cubic-bezier(.22, 1, .36, 1),
+    transform .46s cubic-bezier(.22, 1, .36, 1),opacity .35s cubic-bezier(.22, 1, .36, 1)}
+}
+
+</style>
 </head>
 <body>
   <main class="page">

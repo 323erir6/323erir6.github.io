@@ -377,4 +377,4 @@ function setupNovaInfiniteMarquee() {
   });
 }
 
-setupNovaInfiniteMarquee();
+// Keep the menu categories stationary; avoid infinite scroll loops.

@@ -175,3 +175,39 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   .admin-select-menu,
   .admin-select-option { transition: none!important; }
 }
+
+@media (prefers-reduced-motion:no-preference) {
+  .admin-calendar-day {transition:transform .42s cubic-bezier(.22, 1, .36, 1),
+    border-color .35s cubic-bezier(.22, 1, .36, 1),box-shadow .42s cubic-bezier(.22, 1, .36, 1),background .35s cubic-bezier(.22, 1, .36, 1);}
+  .booking-card,.blocked-card,.barber-admin-card {animation:adminCardIn .36s cubic-bezier(.22, 1, .36, 1) both;}
+}
+@keyframes adminCardIn{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* OneOne motion refinement (2026-11-09): intentional easing, no sudden state jumps. */
+@media (prefers-reduced-motion: no-preference) {
+  a, button, input, textarea, select {
+    transition: color .32s cubic-bezier(.22, 1, .36, 1), background-color .32s cubic-bezier(.22, 1, .36, 1),
+      border-color .32s cubic-bezier(.22, 1, .36, 1), box-shadow .4s cubic-bezier(.22, 1, .36, 1),
+      opacity .32s cubic-bezier(.22, 1, .36, 1), transform .42s cubic-bezier(.22, 1, .36, 1),
+      filter .4s cubic-bezier(.22, 1, .36, 1);
+  }
+  :is(.card, .project-card, .project-featured, .pricing-card, .price-card,
+      .booking-card, .blocked-card, .barber-admin-card, .shot, .gallery figure,
+      .flash-card, .artist, .admin-calendar-day, .stats article, .panel) {
+    transition: transform .45s cubic-bezier(.22, 1, .36, 1), background-color .35s cubic-bezier(.22, 1, .36, 1),
+      border-color .35s cubic-bezier(.22, 1, .36, 1), box-shadow .45s cubic-bezier(.22, 1, .36, 1),
+      opacity .35s cubic-bezier(.22, 1, .36, 1), filter .45s cubic-bezier(.22, 1, .36, 1);
+  }
+  :is(.project-card, .pricing-card, .price-card, .flash-card, .shot, .artist, .booking-card,
+      .barber-admin-card):hover {
+    transition-timing-function: cubic-bezier(.22, 1, .36, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

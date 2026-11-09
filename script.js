@@ -191,4 +191,4 @@ function setupInfiniteMarquee(containerSelector, trackSelector, groupSelector, s
   });
 }
 
-setupInfiniteMarquee('.ticker', '.ticker-track', '.ticker-group', 52);
+// Technology labels stay stationary to avoid looping seams and clipped text.

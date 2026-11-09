@@ -164,3 +164,44 @@ input:-webkit-autofill:focus {
   caret-color: var(--text);
   transition: background-color 100000s ease-in-out 0s;
 }
+
+@media (prefers-reduced-motion:no-preference) {
+  .panel.enter-forward{animation:barberSoftForward .48s cubic-bezier(.22, 1, .36, 1) both}
+  .panel.enter-back{animation:barberSoftBack .48s cubic-bezier(.22, 1, .36, 1) both}
+  .order-modal-backdrop{animation:barberShadeIn .38s cubic-bezier(.22, 1, .36, 1) both}
+  .order-modal-card{animation:barberModalIn .43s cubic-bezier(.22, 1, .36, 1) both}
+  .calendar-popover:not([hidden]){animation:barberCalendarIn .35s cubic-bezier(.22, 1, .36, 1) both}
+}
+@keyframes barberSoftForward{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes barberSoftBack{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes barberShadeIn{from{opacity:0}to{opacity:1}}
+@keyframes barberCalendarIn{from{opacity:0;transform:translateY(-7px) scale(.985)}to{opacity:1;transform:none}}
+
+/* OneOne motion refinement (2026-11-09): intentional easing, no sudden state jumps. */
+@media (prefers-reduced-motion: no-preference) {
+  a, button, input, textarea, select {
+    transition: color .32s cubic-bezier(.22, 1, .36, 1), background-color .32s cubic-bezier(.22, 1, .36, 1),
+      border-color .32s cubic-bezier(.22, 1, .36, 1), box-shadow .4s cubic-bezier(.22, 1, .36, 1),
+      opacity .32s cubic-bezier(.22, 1, .36, 1), transform .42s cubic-bezier(.22, 1, .36, 1),
+      filter .4s cubic-bezier(.22, 1, .36, 1);
+  }
+  :is(.card, .project-card, .project-featured, .pricing-card, .price-card,
+      .booking-card, .blocked-card, .barber-admin-card, .shot, .gallery figure,
+      .flash-card, .artist, .admin-calendar-day, .stats article, .panel) {
+    transition: transform .45s cubic-bezier(.22, 1, .36, 1), background-color .35s cubic-bezier(.22, 1, .36, 1),
+      border-color .35s cubic-bezier(.22, 1, .36, 1), box-shadow .45s cubic-bezier(.22, 1, .36, 1),
+      opacity .35s cubic-bezier(.22, 1, .36, 1), filter .45s cubic-bezier(.22, 1, .36, 1);
+  }
+  :is(.project-card, .pricing-card, .price-card, .flash-card, .shot, .artist, .booking-card,
+      .barber-admin-card):hover {
+    transition-timing-function: cubic-bezier(.22, 1, .36, 1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

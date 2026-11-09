@@ -16,6 +16,50 @@
 @media(max-width:440px){.topbar-cta{font-size:9px;padding:12px 9px}.mobile-brand{font-size:23px}.hero-message{padding:20px 18px 29px;min-height:575px}.hero h1{font-size:clamp(63px,17vw,84px)}.hero-overline{flex-wrap:wrap;row-gap:8px}.hero-preline{font-size:14px}.hero-specimen{min-height:455px}.specimen-visual{min-height:360px}.specimen-image{max-height:270px;width:65%}.specimen-top,.specimen-bottom{font-size:9px}.specimen-stamp{font-size:23px;padding:13px}.static-band{font-size:9px}.manifest,.artists,.process,.brief,.faq,.archive{padding-left:15px;padding-right:15px}.manifest-main h2{font-size:clamp(52px,13vw,74px)}.archive-header h2{font-size:clamp(65px,16vw,82px)}.filter-toolbar{gap:6px}.filter{padding:9px;font-size:10px}.results-count{width:100%;margin-left:0;text-align:right}.flash-grid{gap:8px}.flash-card{min-height:280px;padding:10px}.flash-image img{max-height:180px}.flash-code{font-size:9px}.flash-caption{font-size:12px}.artists-head h2{font-size:clamp(70px,16vw,87px)}.process-lead h2{font-size:clamp(45px,12vw,58px)}.process-steps article{grid-template-columns:65px minmax(0,1fr) 10px;gap:9px}.process-steps h3{font-size:25px}.process-steps article>span:first-child{font-size:9px}.two-inputs{grid-template-columns:1fr;gap:15px}.brief-sidebar h2{font-size:clamp(66px,17vw,91px)}.footer{grid-template-columns:1fr}.footer-brand{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition-duration:0s!important;animation:none!important}}
 
+
+/* Calm, connected transitions. Infinite animated bands are deliberately absent. */
+@media (prefers-reduced-motion:no-preference) {
+  .site-nav a, .topbar-cta, .button-ink, .artist-select, .form-submit, .filter,
+  .style-choices span, .mobile-toggle, .flash-card, .faq summary span {
+    transition-duration:.42s!important;
+    transition-timing-function:cubic-bezier(.22, 1, .36, 1)!important;
+  }
+  .flash-card{transition:transform .52s cubic-bezier(.22, 1, .36, 1),outline-color .4s cubic-bezier(.22, 1, .36, 1),
+    background-color .45s cubic-bezier(.22, 1, .36, 1),box-shadow .5s cubic-bezier(.22, 1, .36, 1)!important;}
+  .flash-card:hover{transform:translateY(-4px)}
+  .faq summary span{display:inline-block;transition:transform .42s cubic-bezier(.22, 1, .36, 1)!important}
+  .work-modal[open]{animation:znakModalIn .42s cubic-bezier(.22, 1, .36, 1) both}
+  .work-modal[open]::backdrop{animation:znakShadeIn .38s ease-out both}
+  .form-message{transition:opacity .35s cubic-bezier(.22, 1, .36, 1),color .35s cubic-bezier(.22, 1, .36, 1)}
+  ::view-transition-old(root),::view-transition-new(root) {
+    animation-duration:.38s;animation-timing-function:cubic-bezier(.22, 1, .36, 1);
+  }
+}
+@keyframes znakModalIn{from{opacity:0;transform:translateY(15px) scale(.985)}
+ to{opacity:1;transform:none}}
+@keyframes znakShadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:900px) {
+  .site-nav {display:grid!important;opacity:0;visibility:hidden;pointer-events:none;
+    transform:translateY(-12px);
+    transition:opacity .38s cubic-bezier(.22, 1, .36, 1),transform .44s cubic-bezier(.22, 1, .36, 1),visibility 0s linear .44s;}
+  .site-nav.is-open {opacity:1;visibility:visible;pointer-events:auto;
+    transform:none;transition:opacity .38s cubic-bezier(.22, 1, .36, 1),
+    transform .44s cubic-bezier(.22, 1, .36, 1),visibility 0s;}
+  .mobile-toggle span {transition:transform .35s cubic-bezier(.22, 1, .36, 1),opacity .25s ease}
+  .mobile-toggle[aria-expanded="true"] span:first-child {transform:translateY(4.5px) rotate(45deg)}
+  .mobile-toggle[aria-expanded="true"] span:last-child {transform:translateY(-4.5px) rotate(-45deg)}
+}
+@supports (interpolate-size:allow-keywords) {
+  .faq {interpolate-size:allow-keywords}
+  .faq details::details-content{block-size:0;overflow:clip;
+    transition:block-size .4s cubic-bezier(.22, 1, .36, 1),content-visibility .4s allow-discrete;}
+  .faq details[open]::details-content{block-size:auto}
+}
+@media(prefers-reduced-motion:reduce) {
+  .site-nav {transition:none!important}
+  .work-modal[open],.work-modal[open]::backdrop{animation:none!important}
+}
+
 </style>
   
 </head>
@@ -163,17 +207,24 @@ const flashCards = [...document.querySelectorAll('[data-work]')];
 const results = document.querySelector('#result-count');
 filters.forEach(filter => filter.addEventListener('click', () => {
   const category = filter.dataset.filter;
-  filters.forEach(f => {
-    const active = f === filter;
-    f.classList.toggle('active', active);
-    f.setAttribute('aria-pressed', String(active));
-  });
-  let shown = 0;
-  flashCards.forEach(card => {
-    card.hidden = category !== 'all' && card.dataset.category !== category;
-    if (!card.hidden) shown++;
-  });
-  results.textContent = `ПОКАЗАНО ${String(shown).padStart(2,'0')} / 06`;
+  const renderFilter = () => {
+    filters.forEach(f => {
+      const active = f === filter;
+      f.classList.toggle('active', active);
+      f.setAttribute('aria-pressed', String(active));
+    });
+    let shown = 0;
+    flashCards.forEach(card => {
+      card.hidden = category !== 'all' && card.dataset.category !== category;
+      if (!card.hidden) shown++;
+    });
+    results.textContent = `ПОКАЗАНО ${String(shown).padStart(2,'0')} / 06`;
+  };
+  if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.startViewTransition(renderFilter);
+  } else {
+    renderFilter();
+  }
 }));
 
 const dialog = document.querySelector('#work-modal');
@@ -199,7 +250,23 @@ flashCards.forEach(card => card.addEventListener('click', () => {
   modalText.textContent = work.description;
   dialog.showModal();
 }));
-const closeDialog = () => { if (dialog.open) dialog.close(); };
+let modalClosing = false;
+const closeDialog = () => {
+  if (!dialog.open || modalClosing) return Promise.resolve();
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !dialog.animate) {
+    dialog.close();
+    return Promise.resolve();
+  }
+  modalClosing = true;
+  const animation = dialog.animate([
+    {opacity:1,transform:'translateY(0) scale(1)'},
+    {opacity:0,transform:'translateY(12px) scale(.985)'}
+  ],{duration:270,easing:'cubic-bezier(.4,0,1,1)'});
+  return animation.finished.catch(() => {}).then(() => {
+    dialog.close();
+    modalClosing = false;
+  });
+};
 document.querySelector('#close-modal').addEventListener('click', closeDialog);
 dialog.addEventListener('click', event => { if (event.target === dialog) closeDialog(); });
 dialog.addEventListener('close', () => { lastTrigger?.focus(); });
@@ -214,8 +281,7 @@ document.querySelector('#choose-work').addEventListener('click', () => {
   if (matchingRadio) matchingRadio.checked = true;
   const ideaField = document.querySelector('[name="idea"]');
   ideaField.value = `Мене зацікавив ескіз «${activeWork.name}» (F—${activeWork.number}). Хочу обговорити власну інтерпретацію.`;
-  closeDialog();
-  focusBrief();
+  closeDialog().then(focusBrief);
 });
 
 // Choosing an artist pre-fills the brief instead of submitting anything.
